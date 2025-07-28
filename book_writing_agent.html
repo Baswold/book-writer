@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Book Writing Agent System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input[type="text"], input[type="password"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .file-upload {
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .file-upload:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+        }
+
+        .big-go-button {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .big-go-button button {
+            font-size: 2em;
+            padding: 20px 60px;
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.3);
+        }
+
+        .big-go-button button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(231, 76, 60, 0.4);
+        }
+
+        .progress-section {
+            grid-column: 1 / -1;
+            margin-top: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .agent-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .agent-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .agent-card.active {
+            border-left-color: #27ae60;
+            background: #f8fff8;
+        }
+
+        .agent-card.complete {
+            border-left-color: #95a5a6;
+            background: #f5f5f5;
+        }
+
+        .output-area {
+            grid-column: 1 / -1;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .benchmark-section {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .benchmark-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .files-list {
+            max-height: 100px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .file-item {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 AI Book Writing Agent System</h1>
+            <p>Create expansive, beautiful novels with coordinated AI agents</p>
+        </div>
+
+        <div class="main-content">
+            <!-- API Configuration -->
+            <div class="section">
+                <h2>🔑 Claude API Configuration</h2>
+                <div class="input-group">
+                    <label for="apiKey">Claude API Key:</label>
+                    <input type="password" id="apiKey" placeholder="sk-ant-api03-...">
+                </div>
+                <div class="input-group">
+                    <label for="model">Model:</label>
+                    <select id="model">
+                        <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+                        <option value="claude-opus-4">Claude Opus 4</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="testConnection()">Test Connection</button>
+            </div>
+
+            <!-- Book Vision -->
+            <div class="section">
+                <h2>✨ Book Vision</h2>
+                <div class="input-group">
+                    <label for="bookTitle">Book Title:</label>
+                    <input type="text" id="bookTitle" placeholder="The Chronicles of Tomorrow">
+                </div>
+                <div class="input-group">
+                    <label for="genre">Genre:</label>
+                    <select id="genre">
+                        <option value="fantasy">Fantasy</option>
+                        <option value="sci-fi">Science Fiction</option>
+                        <option value="mystery">Mystery</option>
+                        <option value="romance">Romance</option>
+                        <option value="thriller">Thriller</option>
+                        <option value="literary">Literary Fiction</option>
+                        <option value="historical">Historical Fiction</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="targetLength">Target Length:</label>
+                    <select id="targetLength">
+                        <option value="novella">Novella (20-50k words)</option>
+                        <option value="novel">Novel (50-100k words)</option>
+                        <option value="epic">Epic Novel (100k+ words)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="bookConcept">Book Concept & Vision:</label>
+                    <textarea id="bookConcept" placeholder="Describe your book idea, themes, main characters, setting, and overall vision..."></textarea>
+                </div>
+            </div>
+
+            <!-- Style References -->
+            <div class="section">
+                <h2>📖 Style References</h2>
+                <div class="input-group">
+                    <label>Upload Reference Books (PDF/TXT):</label>
+                    <div class="file-upload" onclick="document.getElementById('styleFiles').click()">
+                        <input type="file" id="styleFiles" multiple accept=".pdf,.txt,.epub" onchange="handleStyleFiles(this.files)">
+                        <p>📁 Click to upload reference books for style analysis</p>
+                    </div>
+                    <div id="styleFilesList" class="files-list" style="display: none;"></div>
+                </div>
+                <div class="input-group">
+                    <label for="writingStyle">Writing Style Notes:</label>
+                    <textarea id="writingStyle" placeholder="Describe the writing style you want: tone, narrative voice, pacing, dialogue style, etc."></textarea>
+                </div>
+            </div>
+
+            <!-- Context & Research -->
+            <div class="section">
+                <h2>🔍 Context & Research</h2>
+                <div class="input-group">
+                    <label>Upload Research Materials:</label>
+                    <div class="file-upload" onclick="document.getElementById('researchFiles').click()">
+                        <input type="file" id="researchFiles" multiple accept=".pdf,.txt,.docx" onchange="handleResearchFiles(this.files)">
+                        <p>📚 Upload world-building docs, character sheets, research materials</p>
+                    </div>
+                    <div id="researchFilesList" class="files-list" style="display: none;"></div>
+                </div>
+                <div class="input-group">
+                    <label for="worldContext">World & Character Context:</label>
+                    <textarea id="worldContext" placeholder="Detailed information about your world, characters, history, rules, etc."></textarea>
+                </div>
+            </div>
+
+            <!-- Benchmarking Settings -->
+            <div class="section">
+                <h2>⚡ Quality Benchmarking</h2>
+                <div class="input-group">
+                    <label for="qualityThreshold">Minimum Quality Score:</label>
+                    <select id="qualityThreshold">
+                        <option value="7">7/10 - Good</option>
+                        <option value="8" selected>8/10 - Great</option>
+                        <option value="9">9/10 - Excellent</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Quality Metrics:</label>
+                    <div>
+                        <label><input type="checkbox" checked> Plot Coherence</label><br>
+                        <label><input type="checkbox" checked> Character Consistency</label><br>
+                        <label><input type="checkbox" checked> Prose Quality</label><br>
+                        <label><input type="checkbox" checked> Pacing</label><br>
+                        <label><input type="checkbox" checked> Dialogue Quality</label>
+                    </div>
+                </div>
+                <button class="btn btn-warning" onclick="runBenchmark()">🧪 Run Quality Test</button>
+            </div>
+
+            <!-- Price Estimator -->
+            <div class="section">
+                <h2>💰 Price Estimator</h2>
+                <div class="input-group">
+                    <label>Estimated Cost:</label>
+                    <div id="estimatedCost" class="metric-value">$0.00</div>
+                </div>
+                <button class="btn btn-primary" onclick="estimatePrice()">Calculate Cost</button>
+            </div>
+
+            <!-- Agent Controls -->
+            <div class="section">
+                <h2>🤖 Agent Pipeline</h2>
+                <button class="btn btn-primary" onclick="runPlanningAgent()">1. 📋 Planning Agent</button>
+                <button class="btn btn-primary" onclick="runStoryboardAgent()">2. 🎬 Storyboard Agent</button>
+                <button class="btn btn-primary" onclick="runChapterAgent()">3. 📑 Chapter Detailing</button>
+                <button class="btn btn-primary" onclick="runWritingAgent()">4. ✍️ Writing Agent</button>
+                <button class="btn btn-success" onclick="runFullPipeline()">🚀 Run Full Pipeline</button>
+            </div>
+
+            <!-- Big GO Button -->
+            <div class="big-go-button">
+                <button onclick="startBookCreation()">
+                    🚀 CREATE MY BOOK! 🚀
+                </button>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="progress-section section">
+                <h2>📊 Progress Dashboard</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="agent-status">
+                    <div class="agent-card" id="planningAgent">
+                        <h4>📋 Planning Agent</h4>
+                        <p>Status: <span id="planningStatus">Waiting</span></p>
+                    </div>
+                    <div class="agent-card" id="storyboardAgent">
+                        <h4>🎬 Storyboard Agent</h4>
+                        <p>Status: <span id="storyboardStatus">Waiting</span></p>
+                    </div>
+                    <div class="agent-card" id="chapterAgent">
+                        <h4>📑 Chapter Agent</h4>
+                        <p>Status: <span id="chapterStatus">Waiting</span></p>
+                    </div>
+                    <div class="agent-card" id="writingAgent">
+                        <h4>✍️ Writing Agent</h4>
+                        <p>Status: <span id="writingStatus">Waiting</span></p>
+                    </div>
+                </div>
+
+                <!-- Benchmark Results -->
+                <div class="benchmark-section" id="benchmarkSection" style="display: none;">
+                    <h3>🏆 Quality Benchmark Results</h3>
+                    <div class="benchmark-metrics">
+                        <div class="metric">
+                            <div class="metric-value" id="overallScore">-</div>
+                            <div class="metric-label">Overall Score</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="plotScore">-</div>
+                            <div class="metric-label">Plot Coherence</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="characterScore">-</div>
+                            <div class="metric-label">Character Consistency</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="proseScore">-</div>
+                            <div class="metric-label">Prose Quality</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="pacingScore">-</div>
+                            <div class="metric-label">Pacing</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Output Console -->
+                <div class="output-area" id="outputConsole">
+                    <div>📝 Book Writing Agent System Initialized</div>
+                    <div>Ready to create your masterpiece...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let bookState = {
+            apiKey: '',
+            outline: null,
+            storyboard: null,
+            chapters: [],
+            manuscript: '',
+            styleReferences: [],
+            researchMaterials: []
+        };
+
+        // Utility functions
+        function log(message) {
+            const console = document.getElementById('outputConsole');
+            const timestamp = new Date().toLocaleTimeString();
+            console.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function updateProgress(percentage) {
+            document.getElementById('progressFill').style.width = percentage + '%';
+        }
+
+        function updateAgentStatus(agent, status, isActive = false, isComplete = false) {
+            const agentCard = document.getElementById(agent + 'Agent');
+            const statusSpan = document.getElementById(agent + 'Status');
+            
+            statusSpan.textContent = status;
+            
+            agentCard.className = 'agent-card';
+            if (isActive) agentCard.classList.add('active');
+            if (isComplete) agentCard.classList.add('complete');
+        }
+
+        // File handling
+        function handleStyleFiles(files) {
+            const filesList = document.getElementById('styleFilesList');
+            filesList.style.display = 'block';
+            filesList.innerHTML = '';
+            
+            bookState.styleReferences = [];
+            for (let file of files) {
+                bookState.styleReferences.push(file);
+                filesList.innerHTML += `<div class="file-item">📖 ${file.name}</div>`;
+            }
+            log(`Added ${files.length} style reference files`);
+        }
+
+        function handleResearchFiles(files) {
+            const filesList = document.getElementById('researchFilesList');
+            filesList.style.display = 'block';
+            filesList.innerHTML = '';
+            
+            bookState.researchMaterials = [];
+            for (let file of files) {
+                bookState.researchMaterials.push(file);
+                filesList.innerHTML += `<div class="file-item">📚 ${file.name}</div>`;
+            }
+            log(`Added ${files.length} research files`);
+        }
+
+        // API Functions
+        async function callClaudeAPI(prompt, maxTokens = 4000) {
+            const apiKey = document.getElementById('apiKey').value;
+            const model = document.getElementById('model').value;
+            
+            if (!apiKey) {
+                throw new Error('Please enter your Claude API key');
+            }
+
+            const response = await fetch("https://api.anthropic.com/v1/messages", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                    "anthropic-version": "2023-06-01"
+                },
+                body: JSON.stringify({
+                    model: model,
+                    max_tokens: maxTokens,
+                    messages: [
+                        { role: "user", content: prompt }
+                    ]
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            return data.content[0].text;
+        }
+
+        async function testConnection() {
+            try {
+                log('Testing Claude API connection...');
+                const response = await callClaudeAPI('Hello! Please respond with "Connection successful" if you receive this message.');
+                log('✅ API Connection successful!');
+                log(`Response: ${response}`);
+            } catch (error) {
+                log(`❌ API Connection failed: ${error.message}`);
+            }
+        }
+
+        function estimatePrice() {
+            const model = document.getElementById('model').value;
+            const targetLength = document.getElementById('targetLength').value;
+            const bookConcept = document.getElementById('bookConcept').value;
+            const worldContext = document.getElementById('worldContext').value;
+
+            let wordCount = 0;
+            if (targetLength === 'novella') {
+                wordCount = 35000;
+            } else if (targetLength === 'novel') {
+                wordCount = 75000;
+            } else {
+                wordCount = 120000;
+            }
+
+            const promptLength = (bookConcept.length + worldContext.length) / 4; // Estimate tokens
+            const totalTokens = (wordCount * 1.3) + promptLength; // Estimate output tokens
+
+            let costPerMillionTokens = 0;
+            if (model.includes('sonnet')) {
+                costPerMillionTokens = 3; // $3 per million input tokens, $15 per million output. Average to ~$10
+            } else if (model.includes('opus')) {
+                costPerMillionTokens = 15; // $15 per million input tokens, $75 per million output. Average to ~$50
+            }
+
+            const estimatedCost = (totalTokens / 1000000) * costPerMillionTokens * 5; // Rough estimate with a multiplier
+
+            document.getElementById('estimatedCost').textContent = `${estimatedCost.toFixed(2)}`;
+            log(`💰 Estimated cost: ${estimatedCost.toFixed(2)}`);
+        }
+
+        function startBookCreation() {
+            log('🚀 Starting book creation process...');
+            runFullPipeline();
+        }
+
+        // Agent Functions
+        async function runPlanningAgent() {
+            try {
+                updateAgentStatus('planning', 'Running...', true);
+                log('🚀 Starting Planning Agent...');
+
+                const bookConcept = document.getElementById('bookConcept').value;
+                const genre = document.getElementById('genre').value;
+                const targetLength = document.getElementById('targetLength').value;
+                const worldContext = document.getElementById('worldContext').value;
+
+                const prompt = `You are an expert book planning agent. Create a comprehensive book outline for:
+
+BOOK CONCEPT: ${bookConcept}
+GENRE: ${genre}
+TARGET LENGTH: ${targetLength}
+WORLD CONTEXT: ${worldContext}
+
+Please provide:
+1. A refined book concept and theme
+2. Main character profiles (3-5 key characters)
+3. Three-act structure breakdown
+4. Chapter-by-chapter outline (aim for 20-30 chapters)
+5. Key plot points and character arcs
+6. World-building elements
+7. Potential subplots
+
+Format as a detailed, structured outline that other agents can build upon.`;
+
+                const outline = await callClaudeAPI(prompt, 8000);
+                bookState.outline = outline;
+                
+                log('✅ Planning Agent completed successfully!');
+                log('📋 Book outline generated');
+                updateAgentStatus('planning', 'Complete', false, true);
+                updateProgress(25);
+
+            } catch (error) {
+                log(`❌ Planning Agent failed: ${error.message}`);
+                updateAgentStatus('planning', 'Failed');
+            }
+        }
+
+        async function runStoryboardAgent() {
+            try {
+                if (!bookState.outline) {
+                    log('❌ Please run Planning Agent first');
+                    return;
+                }
+
+                updateAgentStatus('storyboard', 'Running...', true);
+                log('🎬 Starting Storyboard Agent...');
+
+                const prompt = `You are a story storyboarding agent. Using this book outline:
+
+${bookState.outline}
+
+Create a detailed storyboard that includes:
+1. Scene-by-scene breakdown for each chapter
+2. Character emotional arcs throughout the story
+3. Pacing notes (action, dialogue, introspection balance)
+4. Key scenes that need special attention
+5. Transition points between chapters
+6. Climactic moments and their setup
+7. Visual/sensory details for key scenes
+
+Focus on narrative flow and dramatic structure.`;
+
+                const storyboard = await callClaudeAPI(prompt, 8000);
+                bookState.storyboard = storyboard;
+                
+                log('✅ Storyboard Agent completed successfully!');
+                log('🎬 Detailed storyboard created');
+                updateAgentStatus('storyboard', 'Complete', false, true);
+                updateProgress(50);
+
+            } catch (error) {
+                log(`❌ Storyboard Agent failed: ${error.message}`);
+                updateAgentStatus('storyboard', 'Failed');
+            }
+        }
+
+        async function runChapterAgent() {
+            try {
+                if (!bookState.storyboard) {
+                    log('❌ Please run Storyboard Agent first');
+                    return;
+                }
+
+                updateAgentStatus('chapter', 'Running...', true);
+                log('📑 Starting Chapter Detailing Agent...');
+
+                const writingStyle = document.getElementById('writingStyle').value;
+
+                const prompt = `You are a chapter development agent. Using this storyboard:
+
+${bookState.storyboard}
+
+WRITING STYLE REQUIREMENTS: ${writingStyle}
+
+Create detailed chapter-by-chapter writing instructions including:
+1. Chapter goals and themes
+2. Character development points
+3. Dialogue style and voice notes
+4. Descriptive passages needed
+5. Pacing instructions
+6. Specific scenes to emphasize
+7. Word count targets per chapter
+8. Tone and mood directions
+
+Provide specific, actionable instructions for each chapter that a writing agent can follow.`;
+
+                const chapterDetails = await callClaudeAPI(prompt, 8000);
+                bookState.chapters = chapterDetails;
+                
+                log('✅ Chapter Agent completed successfully!');
+                log('📑 Detailed chapter instructions created');
+                updateAgentStatus('chapter', 'Complete', false, true);
+                updateProgress(75);
+
+            } catch (error) {
+                log(`❌ Chapter Agent failed: ${error.message}`);
+                updateAgentStatus('chapter', 'Failed');
+            }
+        }
+
+        async function runWritingAgent() {
+            try {
+                if (!bookState.chapters) {
+                    log('❌ Please run Chapter Agent first');
+                    return;
+                }
+
+                updateAgentStatus('writing', 'Running...', true);
+                log('✍️ Starting Writing Agent...');
+
+                const bookTitle = document.getElementById('bookTitle').value;
+
+                // This would be a simplified version - in reality, you'd write chapter by chapter
+                const prompt = `You are a master novelist. Write the opening chapter of "${bookTitle}" using:
+
+OUTLINE: ${bookState.outline}
+STORYBOARD: ${bookState.storyboard}
+CHAPTER DETAILS: ${bookState.chapters}
+
+Write a compelling, high-quality first chapter (2000-3000 words) that:
+1. Establishes the protagonist and world
+2. Sets the tone and style
+3. Hooks the reader immediately
+4. Follows the established outline
+5. Demonstrates the writing style specified
+
+This is just the first chapter - maintain consistency for future chapters.`;
+
+                const firstChapter = await callClaudeAPI(prompt, 8000);
+                bookState.manuscript = firstChapter;
+                
+                log('✅ Writing Agent completed first chapter!');
+                log('✍️ Chapter 1 written (this is a demo - full book would continue)');
+                updateAgentStatus('writing', 'Chapter 1 Complete', false, true);
+                updateProgress(100);
+
+                // Show the written chapter
+                const outputConsole = document.getElementById('outputConsole');
+                outputConsole.innerHTML += `<div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #3498db;"><strong>📖 CHAPTER 1:</strong><br><br>${firstChapter.replace(/\n/g, '<br>')}</div>`;
+
+            } catch (error) {
+                log(`❌ Writing Agent failed: ${error.message}`);
+                updateAgentStatus('writing', 'Failed');
+            }
+        }
+
+        async function runBenchmark() {
+            try {
+                log('🧪 Running quality benchmark...');
+                
+                if (!bookState.manuscript) {
+                    log('❌ No content to benchmark yet');
+                    return;
+                }
+
+                const prompt = `You are a literary quality assessment agent. Evaluate this text on a scale of 1-10:
+
+${bookState.manuscript}
+
+Provide scores for:
+1. Plot Coherence (1-10)
+2. Character Consistency (1-10)  
+3. Prose Quality (1-10)
+4. Pacing (1-10)
+5. Overall Score (1-10)
+
+Format as JSON: {"plot": X, "character": X, "prose": X, "pacing": X, "overall": X}
+
+Then provide brief feedback on strengths and areas for improvement.`;
+
+                const evaluation = await callClaudeAPI(prompt, 2000);
+                
+                // Parse the JSON from the response
+                const jsonMatch = evaluation.match(/\{[^}]+\}/);
+                if (jsonMatch) {
+                    const scores = JSON.parse(jsonMatch[0]);
+                    
+                    document.getElementById('overallScore').textContent = scores.overall + '/10';
+                    document.getElementById('plotScore').textContent = scores.plot + '/10';
+                    document.getElementById('characterScore').textContent = scores.character + '/10';
+                    document.getElementById('proseScore').textContent = scores.prose + '/10';
+                    document.getElementById('pacingScore').textContent = scores.pacing + '/10';
+                    
+                    document.getElementById('benchmarkSection').style.display = 'block';
+                    
+                    const threshold = parseInt(document.getElementById('qualityThreshold').value);
+                    if (scores.overall >= threshold) {
+                        log(`✅ Quality benchmark PASSED! Score: ${scores.overall}/10`);
+                    } else {
+                        log(`⚠️ Quality benchmark below threshold. Score: ${scores.overall}/10 (need ${threshold}/10)`);
+                    }
+                }
+                
+                log('🧪 Benchmark complete');
+
+            } catch (error) {
+                log(`❌ Benchmark failed: ${error.message}`);
+            }
+        }
+
+        async function runFullPipeline() {
+            log('🚀 Starting full book creation pipeline...');
+            await runPlanningAgent();
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Brief pause
+            await runStoryboardAgent();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await runChapterAgent();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await runWritingAgent();
+            await runBenchmark();
+            log('🎉 Pipeline complete! Your book chapter is ready.');

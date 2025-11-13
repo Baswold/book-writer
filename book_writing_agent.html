@@ -426,8 +426,9 @@
                 <button class="btn btn-primary" onclick="runPlanningAgent()">1. 📋 Planning Agent</button>
                 <button class="btn btn-primary" onclick="runStoryboardAgent()">2. 🎬 Storyboard Agent</button>
                 <button class="btn btn-primary" onclick="runChapterAgent()">3. 📑 Chapter Detailing</button>
-                <button class="btn btn-primary" onclick="runWritingAgent()">4. ✍️ Writing Agent</button>
+                <button class="btn btn-primary" onclick="runWritingAgent()">4. ✍️ Writing Agent (Ch1)</button>
                 <button class="btn btn-success" onclick="runFullPipeline()">🚀 Run Full Pipeline</button>
+                <button class="btn btn-warning" onclick="writeFullManuscript()">📚 Write Full Manuscript</button>
             </div>
 
             <!-- Big GO Button -->
@@ -505,8 +506,12 @@
             outline: null,
             storyboard: null,
             chapters: [],
+            chapterCount: 0,
             manuscript: '',
+            manuscriptChapters: [],
+            characterBible: null,
             styleReferences: [],
+            styleGuide: null,
             researchMaterials: []
         };
 
@@ -534,17 +539,98 @@
         }
 
         // File handling
-        function handleStyleFiles(files) {
+        async function handleStyleFiles(files) {
             const filesList = document.getElementById('styleFilesList');
             filesList.style.display = 'block';
             filesList.innerHTML = '';
-            
+
             bookState.styleReferences = [];
+
             for (let file of files) {
-                bookState.styleReferences.push(file);
+                const reader = new FileReader();
+
+                const fileContent = await new Promise((resolve, reject) => {
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = reject;
+                    reader.readAsText(file);
+                });
+
+                // Store first 50,000 characters for style analysis
+                bookState.styleReferences.push({
+                    name: file.name,
+                    content: fileContent.substring(0, 50000)
+                });
+
                 filesList.innerHTML += `<div class="file-item">📖 ${file.name}</div>`;
             }
+
             log(`Added ${files.length} style reference files`);
+
+            // Analyze style if API key is present
+            if (document.getElementById('apiKey').value) {
+                await analyzeStyleReferences();
+            }
+        }
+
+        async function analyzeStyleReferences() {
+            if (bookState.styleReferences.length === 0) return;
+
+            try {
+                log('🎨 Analyzing writing style from reference books...');
+
+                let combinedSamples = '';
+                for (let ref of bookState.styleReferences) {
+                    combinedSamples += `\n\n=== SAMPLE FROM ${ref.name} ===\n${ref.content}`;
+                }
+
+                const styleAnalysisPrompt = `You are a literary style analyst. Analyze these writing samples and create a detailed style guide:
+
+${combinedSamples}
+
+Provide a comprehensive style analysis including:
+
+## PROSE STYLE
+- Sentence structure patterns (average length, variety, rhythm)
+- Vocabulary level (simple/complex, formal/casual)
+- Use of literary devices (metaphors, similes, alliteration, etc.)
+- Descriptive density (sparse/moderate/lush)
+- Narrative voice characteristics
+
+## DIALOGUE STYLE
+- Formality and naturalness
+- Use of dialect or distinctive speech patterns
+- Dialogue tags and action beats
+- Balance of dialogue vs. narration
+
+## PACING & RHYTHM
+- Scene length and variation
+- Balance of action/dialogue/introspection
+- Chapter structure patterns
+- Tension building techniques
+
+## POINT OF VIEW
+- POV type (first/third person, past/present tense)
+- Depth of character interiority
+- Narrative distance (close/distant)
+
+## DISTINCTIVE TECHNIQUES
+- Unique stylistic choices
+- Recurring motifs or patterns
+- How emotion is conveyed
+- How setting is established
+
+## WRITING APPROACH SUMMARY
+Provide 3-5 key principles that capture the essence of this writing style that should be emulated.`;
+
+                const styleGuide = await callClaudeAPI(styleAnalysisPrompt, 8000);
+                bookState.styleGuide = styleGuide;
+
+                log('✅ Style analysis complete!');
+                log('🎨 Style guide created from reference books');
+
+            } catch (error) {
+                log(`⚠️ Style analysis failed: ${error.message}`);
+            }
         }
 
         function handleResearchFiles(files) {
@@ -651,29 +737,129 @@
                 const targetLength = document.getElementById('targetLength').value;
                 const worldContext = document.getElementById('worldContext').value;
 
-                const prompt = `You are an expert book planning agent. Create a comprehensive book outline for:
+                const prompt = `You are an expert book planning agent with deep knowledge of story structure, character development, and narrative craft. Your task is to create a comprehensive, publication-ready book outline.
 
 BOOK CONCEPT: ${bookConcept}
 GENRE: ${genre}
 TARGET LENGTH: ${targetLength}
 WORLD CONTEXT: ${worldContext}
 
-Please provide:
-1. A refined book concept and theme
-2. Main character profiles (3-5 key characters)
-3. Three-act structure breakdown
-4. Chapter-by-chapter outline (aim for 20-30 chapters)
-5. Key plot points and character arcs
-6. World-building elements
-7. Potential subplots
+Create a detailed outline following this structure:
 
-Format as a detailed, structured outline that other agents can build upon.`;
+## 1. REFINED CONCEPT & THEME
+- Core premise (2-3 sentences)
+- Central theme and what the book explores
+- Unique angle that makes this story compelling
+- Target audience and appeal
 
-                const outline = await callClaudeAPI(prompt, 8000);
+## 2. PROTAGONIST & MAIN CHARACTERS
+For each of 3-5 key characters, provide:
+- Name, age, occupation
+- Physical description (brief but distinctive)
+- Personality traits and flaws
+- Core motivation and internal conflict
+- Character arc: how they change from beginning to end
+- Backstory elements that inform their behavior
+- Relationships with other characters
+- Voice and speech patterns
+
+## 3. WORLD-BUILDING
+- Setting(s): time period, locations, atmosphere
+- Social/political/economic context
+- Rules of the world (especially for fantasy/sci-fi)
+- Cultural details that affect the story
+- Sensory details: how this world looks, sounds, smells, feels
+
+## 4. THREE-ACT STRUCTURE
+
+**ACT 1 - SETUP (25%)**
+- Opening scene: hook and protagonist introduction
+- Inciting incident that disrupts the status quo
+- Character's initial goal and obstacles
+- Introduction of key characters and world
+- First turning point/plot twist
+
+**ACT 2 - CONFRONTATION (50%)**
+- Rising complications and escalating stakes
+- Midpoint reversal or revelation
+- Character's darkest moment/crisis
+- Subplots that intersect with main plot
+- Character development and relationships
+- Second turning point leading to climax
+
+**ACT 3 - RESOLUTION (25%)**
+- Climactic confrontation or decision
+- Resolution of main conflict
+- Character transformation demonstrated
+- Subplot resolutions
+- Denouement and new equilibrium
+
+## 5. CHAPTER-BY-CHAPTER OUTLINE
+For each of 20-30 chapters, provide:
+- Chapter number and title
+- POV character (if multiple)
+- Setting and time
+- Key events and plot developments
+- Character development moments
+- Emotional beats and tone
+- Chapter goal and how it advances the plot
+- Ending hook for next chapter
+- Estimated word count: 2,500-4,000 words per chapter
+
+## 6. SUBPLOTS & THREADS
+- List 2-4 subplots that weave through the main narrative
+- How each subplot connects to and enriches the main plot
+- Resolution points for each subplot
+
+## 7. NARRATIVE TECHNIQUES
+- POV approach (first/third person, single/multiple POV)
+- Tense (past/present)
+- Narrative voice characteristics
+- Use of flashbacks, time jumps, or other structural elements
+- Pacing strategy (balance of action, dialogue, introspection)
+
+## 8. KEY SCENES TO EMPHASIZE
+List 5-10 critical scenes that define the book:
+- What happens in each scene
+- Why it's crucial to the story
+- Emotional impact desired
+- Special attention needed (action, dialogue, description, etc.)
+
+Ensure the outline is cohesive, with clear causality between events, consistent character motivations, and a satisfying narrative arc. Every element should serve the story's theme and emotional journey.`;
+
+                const outline = await callClaudeAPI(prompt, 16000);
                 bookState.outline = outline;
-                
+
+                // Extract chapter count from outline
+                const chapterMatches = outline.match(/Chapter \d+/gi);
+                if (chapterMatches) {
+                    bookState.chapterCount = chapterMatches.length;
+                    log(`📊 Detected ${bookState.chapterCount} chapters in outline`);
+                }
+
+                // Create character bible for consistency
+                log('📖 Creating character consistency bible...');
+                const bibleProm = `Extract a character bible from this outline for consistency tracking:
+
+${outline}
+
+For each character, provide:
+- Full name
+- Age, occupation, background
+- Physical description (height, build, hair, eyes, distinctive features)
+- Personality traits and mannerisms
+- Speech patterns and vocabulary
+- Core motivations and fears
+- Key relationships
+- Character arc summary
+
+Format as a quick-reference guide to maintain consistency across all chapters.`;
+
+                const characterBible = await callClaudeAPI(bibleProm, 8000);
+                bookState.characterBible = characterBible;
+
                 log('✅ Planning Agent completed successfully!');
-                log('📋 Book outline generated');
+                log('📋 Book outline and character bible generated');
                 updateAgentStatus('planning', 'Complete', false, true);
                 updateProgress(25);
 
@@ -693,22 +879,114 @@ Format as a detailed, structured outline that other agents can build upon.`;
                 updateAgentStatus('storyboard', 'Running...', true);
                 log('🎬 Starting Storyboard Agent...');
 
-                const prompt = `You are a story storyboarding agent. Using this book outline:
+                const prompt = `You are an expert story storyboarding agent, skilled in cinematic storytelling, dramatic structure, and scene craft. Your task is to transform the outline into a vivid, scene-level blueprint.
 
+BOOK OUTLINE:
 ${bookState.outline}
 
-Create a detailed storyboard that includes:
-1. Scene-by-scene breakdown for each chapter
-2. Character emotional arcs throughout the story
-3. Pacing notes (action, dialogue, introspection balance)
-4. Key scenes that need special attention
-5. Transition points between chapters
-6. Climactic moments and their setup
-7. Visual/sensory details for key scenes
+Create a comprehensive storyboard with the following components:
 
-Focus on narrative flow and dramatic structure.`;
+## 1. SCENE-BY-SCENE BREAKDOWN
+For EACH chapter, break it down into 3-7 distinct scenes. For each scene, specify:
 
-                const storyboard = await callClaudeAPI(prompt, 8000);
+**Scene Heading**: [Chapter X, Scene Y - Location, Time of Day]
+
+**POV Character**: Who's experiencing this scene?
+
+**Scene Purpose**:
+- What plot point does this advance?
+- What character development occurs?
+- What information is revealed?
+
+**Characters Present**: List all characters in the scene
+
+**Setting & Atmosphere**:
+- Physical location (specific details)
+- Time of day/season/weather
+- Mood and emotional tone
+- Sensory environment (sights, sounds, smells, textures)
+
+**Action & Events** (beat by beat):
+1. Scene opening: where we find the characters, what's happening
+2. Conflict/tension: what goes wrong, what creates dramatic interest
+3. Escalation: how tension builds
+4. Resolution/cliffhanger: how the scene ends
+
+**Dialogue Notes**:
+- Key exchanges that must happen
+- Subtext and unspoken tensions
+- Character voice reminders
+- Balance of dialogue vs. action
+
+**Emotional Journey**:
+- Character's emotional state at scene start
+- Emotional shifts during the scene
+- Emotional state at scene end
+- How this affects their arc
+
+**Pacing Guidance**:
+- Scene length (short/medium/long)
+- Rhythm (fast-paced action / contemplative / balanced)
+- Balance: X% dialogue, Y% action, Z% introspection/description
+
+**Transition to Next Scene**:
+- How does this scene end to set up the next?
+- Time gap between scenes (if any)
+- Mood shift needed
+
+## 2. CHARACTER EMOTIONAL ARCS
+Track each main character's emotional journey chapter by chapter:
+- Chapter X: [Character name]'s state, what they learn, how they change
+- Key relationship developments
+- Internal conflict progression
+- Growth or deterioration points
+
+## 3. TENSION & PACING MAP
+Create a tension curve for the book:
+- Mark high-tension scenes (action, conflict, revelations)
+- Mark breathing room (character moments, world-building)
+- Ensure proper pacing rhythm (tension/release cycles)
+- Identify points where pace needs to accelerate or slow
+
+## 4. SENSORY & ATMOSPHERIC DETAILS
+For each major setting, provide:
+- Visual details (colors, lighting, spatial layout)
+- Sounds (ambient noise, music, dialogue echoes)
+- Smells and tastes (when relevant)
+- Tactile sensations (temperature, textures)
+- Overall mood and how setting reinforces theme
+
+## 5. CRITICAL SCENES EXPANSION
+For the 5-10 key scenes identified in the outline, provide:
+- Extended beat-by-beat breakdown (10-15 story beats)
+- Specific dialogue snippets or exchanges
+- Crucial descriptions needed
+- Emotional peaks to hit
+- Symbolism or thematic elements to weave in
+
+## 6. SUBPLOT TRACKING
+For each subplot:
+- Which scenes advance this subplot?
+- How does it intersect with the main plot?
+- Progression from chapter to chapter
+- Resolution point
+
+## 7. TRANSITION & CHAPTER FLOW
+- How each chapter connects to the next
+- Cliffhangers and hooks
+- Time transitions between chapters
+- Location/POV shifts and how to handle them smoothly
+
+## 8. SHOW DON'T TELL GUIDANCE
+For each chapter, note:
+- Emotions/states to show through action rather than narration
+- Character traits to demonstrate through behavior
+- World-building to reveal through natural integration
+- Backstory to weave in organically (not info-dumps)
+
+Your storyboard should be detailed enough that a writing agent can visualize and execute each scene with clarity, emotion, and purpose. Every scene should earn its place by advancing plot, character, or theme.`;
+
+                const storyboard = await callClaudeAPI(prompt, 16000);
                 bookState.storyboard = storyboard;
                 
                 log('✅ Storyboard Agent completed successfully!');
@@ -734,25 +1012,161 @@ Focus on narrative flow and dramatic structure.`;
 
                 const writingStyle = document.getElementById('writingStyle').value;
 
-                const prompt = `You are a chapter development agent. Using this storyboard:
+                const styleSection = bookState.styleGuide
+                    ? `\n\nSTYLE GUIDE FROM REFERENCE BOOKS:\n${bookState.styleGuide}\n\nEnsure all writing instructions align with this style guide.`
+                    : `\n\nWRITING STYLE REQUIREMENTS: ${writingStyle}`;
 
-${bookState.storyboard}
+                const prompt = `You are an expert chapter development agent with mastery of narrative craft, prose technique, and storytelling mechanics. Transform the storyboard into precise, actionable writing instructions.
 
-WRITING STYLE REQUIREMENTS: ${writingStyle}
+STORYBOARD:
+${bookState.storyboard}${styleSection}
 
-Create detailed chapter-by-chapter writing instructions including:
-1. Chapter goals and themes
-2. Character development points
-3. Dialogue style and voice notes
-4. Descriptive passages needed
-5. Pacing instructions
-6. Specific scenes to emphasize
-7. Word count targets per chapter
-8. Tone and mood directions
+Create detailed chapter-by-chapter writing instructions. For EACH chapter, provide:
 
-Provide specific, actionable instructions for each chapter that a writing agent can follow.`;
+## CHAPTER X: [Title]
 
-                const chapterDetails = await callClaudeAPI(prompt, 8000);
+### 1. CHAPTER OVERVIEW
+- Primary goal: What must this chapter accomplish?
+- Theme: What idea or emotion should resonate?
+- POV: Whose perspective, and why?
+- Tone: Overall emotional atmosphere
+- Target word count: 2,500-4,000 words
+
+### 2. OPENING STRATEGY
+- Opening line approach: (hook with action/dialogue/description/question)
+- Opening paragraph goal: What should it establish?
+- First scene setup: Where, when, who, doing what?
+- Emotional tone to set immediately
+
+### 3. SCENE-BY-SCENE EXECUTION GUIDE
+
+For each scene in this chapter:
+
+**Scene X.Y - [Scene Name]**
+
+*Setup* (X words):
+- Where we are, who's present
+- Establish atmosphere in first paragraph
+- Ground reader in sensory details
+- Opening action or dialogue
+
+*Development* (X words):
+- Key events that must happen (bullet points)
+- Dialogue exchanges needed (with subtext notes)
+- Action sequences (pacing and details)
+- Character reactions and internal thoughts
+- Descriptions to weave in (don't info-dump)
+
+*Transition* (X words):
+- How to end this scene
+- Bridge to next scene or chapter end
+- Emotional note to leave on
+
+### 4. CHARACTER DEVELOPMENT INSTRUCTIONS
+
+For each character appearing in this chapter:
+- **[Character Name]**
+  - Current emotional state
+  - Goals in this chapter
+  - Obstacles they face
+  - How they should change/react
+  - Voice reminders: (speech patterns, vocabulary, quirks)
+  - Body language and mannerisms
+  - Internal conflict to convey
+  - Relationships to highlight
+
+### 5. DIALOGUE GUIDELINES
+- Proportion of dialogue: X% of chapter
+- Key conversations that must happen:
+  1. [Character A] and [Character B]: Discuss X, reveal Y, create tension around Z
+  2. [Additional exchanges]
+- Dialogue style: (naturalistic/stylized, formal/casual, etc.)
+- Subtext: What's NOT being said but should be felt
+- Avoid: Info dumps, on-the-nose exposition
+- Use dialogue to: Reveal character, advance plot, create tension
+
+### 6. PROSE & DESCRIPTION STRATEGY
+
+**Sensory Balance**:
+- Visual: X% (what to show)
+- Auditory: Y% (sounds to include)
+- Other senses: Z% (smells, touch, taste where relevant)
+
+**Description Approach**:
+- Character descriptions: When and how to describe people
+- Setting descriptions: Level of detail, when to expand vs. minimal
+- Action descriptions: Clarity vs. style balance
+- Metaphors/similes: When to use, tone to match
+
+**Prose Style**:
+- Sentence variety: Mix of short, medium, long sentences
+- Paragraph length: When to use short vs. long paragraphs
+- Rhythm and flow: (staccato for action, flowing for reflection, etc.)
+- Literary devices: What to employ (foreshadowing, symbolism, motifs)
+
+### 7. PACING INSTRUCTIONS
+
+**Chapter Rhythm**:
+- Opening: (fast/medium/slow - and why)
+- Middle: (acceleration/steady/contemplative)
+- Ending: (climactic/cliffhanger/resolution)
+
+**Time Management**:
+- Real-time scenes vs. summarized time
+- Where to slow down and linger
+- Where to compress and move quickly
+- Flashbacks or time jumps (if any): How to handle
+
+**Tension Curve**:
+- Start tension level: X/10
+- Build to: Y/10
+- End at: Z/10
+- Techniques to build tension: (conflict, unanswered questions, stakes, ticking clock)
+
+### 8. SHOW DON'T TELL SPECIFICS
+
+Emotions to SHOW through action/dialogue, not state:
+- [Emotion]: Show through [specific behavior/action/dialogue]
+- [Character trait]: Demonstrate via [scene example]
+
+Information to REVEAL naturally (not explain):
+- [Plot point]: Reveal through [method]
+- [Backstory]: Weave in via [technique]
+- [World-building]: Integrate through [approach]
+
+### 9. CHAPTER ENDING
+- Final image or line: What feeling/question to leave?
+- Cliffhanger/hook: Why reader must continue?
+- Emotional resolution or escalation?
+- Setup for next chapter: What thread to dangle?
+
+### 10. QUALITY CHECKPOINTS
+
+Before considering this chapter complete, ensure:
+- [ ] Chapter goal achieved
+- [ ] Character development advanced
+- [ ] Plot moved forward
+- [ ] Themes woven in subtly
+- [ ] Pacing feels right (not rushed or dragging)
+- [ ] Dialogue sounds natural and purposeful
+- [ ] Descriptions enhance without slowing
+- [ ] No plot holes or inconsistencies
+- [ ] Ending provides satisfying pause point or compelling hook
+- [ ] Writing style matches established voice
+
+### 11. COMMON PITFALLS TO AVOID
+- Info-dumping backstory or world-building
+- Characters explaining things they both already know
+- Repetitive sentence structures
+- Overuse of adverbs and weak verbs
+- Telling emotions instead of showing them
+- Inconsistent POV or tense
+- Scenes that don't advance plot or character
+- Unrealistic dialogue or on-the-nose exposition
+
+Provide these instructions for ALL chapters in the outline.`;
+
+                const chapterDetails = await callClaudeAPI(prompt, 16000);
                 bookState.chapters = chapterDetails;
                 
                 log('✅ Chapter Agent completed successfully!');
@@ -778,36 +1192,249 @@ Provide specific, actionable instructions for each chapter that a writing agent 
 
                 const bookTitle = document.getElementById('bookTitle').value;
 
+                const styleSection = bookState.styleGuide
+                    ? `\n\nSTYLE GUIDE TO FOLLOW:\n${bookState.styleGuide}\n\nYour writing must emulate this style closely.`
+                    : '';
+
                 // This would be a simplified version - in reality, you'd write chapter by chapter
-                const prompt = `You are a master novelist. Write the opening chapter of "${bookTitle}" using:
+                const prompt = `You are a master novelist with published works in multiple genres. Your task is to write Chapter 1 of "${bookTitle}" with publication-quality prose.
 
-OUTLINE: ${bookState.outline}
-STORYBOARD: ${bookState.storyboard}
-CHAPTER DETAILS: ${bookState.chapters}
+OUTLINE:
+${bookState.outline}
 
-Write a compelling, high-quality first chapter (2000-3000 words) that:
-1. Establishes the protagonist and world
-2. Sets the tone and style
-3. Hooks the reader immediately
-4. Follows the established outline
-5. Demonstrates the writing style specified
+STORYBOARD:
+${bookState.storyboard}
 
-This is just the first chapter - maintain consistency for future chapters.`;
+DETAILED CHAPTER INSTRUCTIONS:
+${bookState.chapters}${styleSection}
 
-                const firstChapter = await callClaudeAPI(prompt, 8000);
-                bookState.manuscript = firstChapter;
-                
-                log('✅ Writing Agent completed first chapter!');
-                log('✍️ Chapter 1 written (this is a demo - full book would continue)');
+## WRITING TASK: CHAPTER 1
+
+Write a compelling, publication-ready first chapter of 2,500-3,500 words following these principles:
+
+### OPENING STRATEGY
+- Hook the reader within the first 3 sentences
+- Open with action, dialogue, or vivid description (not backstory or exposition)
+- Establish POV character's voice immediately
+- Ground the reader in time, place, and situation quickly
+
+### PROSE QUALITY STANDARDS
+
+**Sentence Craft**:
+- Vary sentence length and structure (mix short, punchy sentences with longer, flowing ones)
+- Use strong, specific verbs (not weak verbs + adverbs)
+- Choose precise, evocative nouns (not generic + adjectives)
+- Deploy metaphors and similes sparingly but memorably
+- Create rhythm through syntax and word choice
+
+**Show, Don't Tell**:
+- Reveal character emotions through physical reactions, dialogue, and actions
+- Demonstrate personality through choices and behavior
+- Integrate world-building through natural observation and interaction
+- Convey backstory through implication and brief flashbacks (not exposition dumps)
+
+**Dialogue**:
+- Make each character's voice distinct (vocabulary, rhythm, speech patterns)
+- Use subtext - characters don't always say what they mean
+- Balance dialogue with action beats (characters doing things while talking)
+- Avoid on-the-nose exposition (characters explaining things they both know)
+- Use dialogue to reveal character, create tension, advance plot
+
+**Description & Setting**:
+- Engage multiple senses (not just visual)
+- Filter descriptions through POV character's perspective and mood
+- Use concrete, specific details over generic descriptions
+- Weave setting into action (don't stop the story to describe)
+- Let setting reinforce theme and atmosphere
+
+**Pacing**:
+- Balance action, dialogue, and introspection
+- Slow down for important emotional moments
+- Speed up during conflict and tension
+- Use white space and paragraph breaks for rhythm
+- End scenes and paragraphs with forward momentum
+
+**Character Voice**:
+- Maintain consistent POV (don't head-hop)
+- Use internal thoughts sparingly but effectively
+- Character's observations should reflect their personality, background, mood
+- Vocabulary and references should fit character's age, education, culture
+
+### STRUCTURE FOR THIS CHAPTER
+
+Follow the scene breakdowns from the storyboard, ensuring:
+- Each scene has a clear purpose
+- Transitions between scenes are smooth
+- Tension builds across the chapter
+- The chapter ends with a hook (question, revelation, cliffhanger, or compelling next step)
+
+### QUALITY CHECKLIST
+
+Before finalizing, ensure:
+- Opening hooks immediately
+- Character voice is distinct and consistent
+- World feels real and lived-in (not explained)
+- Dialogue sounds natural with subtext
+- Scenes flow smoothly into each other
+- Pacing feels right (not rushed or dragging)
+- Sensory details bring scenes alive
+- No info-dumps or awkward exposition
+- Character motivations are clear through action
+- Ending makes reader want to continue
+- Prose is polished (varied sentences, strong verbs, precise words)
+- No clichés or purple prose
+- Consistency with outline and character profiles
+
+### STYLE & TONE
+Maintain the writing style specified in the style requirements, matching:
+- Formality level (literary vs. commercial)
+- Descriptive density (sparse vs. lush)
+- Emotional intensity
+- Genre conventions while adding fresh elements
+
+Write the complete Chapter 1 now. This chapter will set the standard for the entire novel, so make every sentence count.`;
+
+                const firstChapter = await callClaudeAPI(prompt, 16000);
+
+                // Revision pass for quality
+                log('🔄 Running revision pass to improve quality...');
+                const revisionPrompt = `You are an expert editor. Review and revise this chapter to elevate its quality:
+
+${firstChapter}
+
+IMPROVEMENTS TO MAKE:
+1. Strengthen weak verbs and eliminate unnecessary adverbs
+2. Enhance dialogue with better subtext and character voice
+3. Add more sensory details where scenes feel flat
+4. Improve sentence variety and rhythm
+5. Eliminate any clichés or purple prose
+6. Ensure character emotions are shown, not told
+7. Tighten any verbose passages
+8. Strengthen the opening hook if needed
+9. Make the ending more compelling
+10. Polish awkward phrasing
+
+Provide the complete REVISED chapter, not just notes. Maintain the same plot and structure, but elevate the prose quality.`;
+
+                const revisedChapter = await callClaudeAPI(revisionPrompt, 16000);
+                bookState.manuscriptChapters.push({
+                    number: 1,
+                    content: revisedChapter
+                });
+                bookState.manuscript = revisedChapter;
+
+                log('✅ Writing Agent completed Chapter 1 with revision!');
+                log('✍️ Chapter 1 written and revised for quality');
                 updateAgentStatus('writing', 'Chapter 1 Complete', false, true);
                 updateProgress(100);
 
                 // Show the written chapter
                 const outputConsole = document.getElementById('outputConsole');
-                outputConsole.innerHTML += `<div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #3498db;"><strong>📖 CHAPTER 1:</strong><br><br>${firstChapter.replace(/\n/g, '<br>')}</div>`;
+                outputConsole.innerHTML += `<div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #3498db;"><strong>📖 CHAPTER 1 (REVISED):</strong><br><br>${revisedChapter.replace(/\n/g, '<br>')}</div>`;
 
             } catch (error) {
                 log(`❌ Writing Agent failed: ${error.message}`);
+                updateAgentStatus('writing', 'Failed');
+            }
+        }
+
+        async function writeFullManuscript() {
+            try {
+                if (!bookState.chapters || !bookState.outline) {
+                    log('❌ Please run the full pipeline first');
+                    return;
+                }
+
+                // Chapter 1 should already be written
+                if (bookState.manuscriptChapters.length === 0) {
+                    log('❌ Please write Chapter 1 first using the Writing Agent');
+                    return;
+                }
+
+                const totalChapters = bookState.chapterCount || 20;
+                log(`📚 Writing full manuscript: ${totalChapters} chapters`);
+
+                updateAgentStatus('writing', 'Writing full book...', true);
+
+                // Start from chapter 2
+                for (let chapterNum = 2; chapterNum <= totalChapters; chapterNum++) {
+                    log(`✍️ Writing Chapter ${chapterNum}/${totalChapters}...`);
+
+                    const bookTitle = document.getElementById('bookTitle').value;
+                    const styleSection = bookState.styleGuide
+                        ? `\n\nSTYLE GUIDE TO FOLLOW:\n${bookState.styleGuide}\n\nYour writing must emulate this style closely.`
+                        : '';
+
+                    // Get previous chapters for continuity
+                    const previousChapters = bookState.manuscriptChapters
+                        .slice(Math.max(0, bookState.manuscriptChapters.length - 2))
+                        .map(ch => `CHAPTER ${ch.number} (for reference):\n${ch.content.substring(0, 3000)}`)
+                        .join('\n\n');
+
+                    const chapterPrompt = `You are a master novelist. Write Chapter ${chapterNum} of "${bookTitle}" with publication-quality prose.
+
+OUTLINE:
+${bookState.outline}
+
+CHARACTER BIBLE (maintain consistency):
+${bookState.characterBible}
+
+STORYBOARD:
+${bookState.storyboard}
+
+DETAILED CHAPTER INSTRUCTIONS:
+${bookState.chapters}
+
+PREVIOUS CHAPTERS FOR CONTINUITY:
+${previousChapters}${styleSection}
+
+Write Chapter ${chapterNum} (2,500-3,500 words) following the outline and chapter instructions. Maintain:
+- Character consistency with the character bible
+- Continuity with previous chapters
+- The established writing style
+- Plot progression as outlined
+- Quality prose standards (show don't tell, strong verbs, varied sentences, etc.)
+
+Focus specifically on the instructions for Chapter ${chapterNum}. Write the complete chapter now.`;
+
+                    const chapter = await callClaudeAPI(chapterPrompt, 16000);
+
+                    // Quick revision for this chapter
+                    log(`🔄 Revising Chapter ${chapterNum}...`);
+                    const revisionPrompt = `Revise this chapter for quality:
+
+${chapter}
+
+Improve: weak verbs, dialogue quality, sensory details, sentence variety, emotional showing (not telling).
+Provide the complete REVISED chapter.`;
+
+                    const revisedChapter = await callClaudeAPI(revisionPrompt, 16000);
+
+                    bookState.manuscriptChapters.push({
+                        number: chapterNum,
+                        content: revisedChapter
+                    });
+
+                    const progress = 75 + Math.floor((chapterNum / totalChapters) * 25);
+                    updateProgress(progress);
+
+                    log(`✅ Chapter ${chapterNum} complete`);
+                }
+
+                // Compile full manuscript
+                bookState.manuscript = bookState.manuscriptChapters
+                    .map(ch => `CHAPTER ${ch.number}\n\n${ch.content}`)
+                    .join('\n\n---\n\n');
+
+                log('🎉 Full manuscript complete!');
+                log(`📖 ${totalChapters} chapters written`);
+                log(`📊 Total word count: ~${(bookState.manuscript.split(' ').length).toLocaleString()} words`);
+
+                updateAgentStatus('writing', 'Full Manuscript Complete', false, true);
+                updateProgress(100);
+
+            } catch (error) {
+                log(`❌ Full manuscript generation failed: ${error.message}`);
                 updateAgentStatus('writing', 'Failed');
             }
         }
@@ -821,20 +1448,60 @@ This is just the first chapter - maintain consistency for future chapters.`;
                     return;
                 }
 
-                const prompt = `You are a literary quality assessment agent. Evaluate this text on a scale of 1-10:
+                // Limit benchmark to first 20000 chars if manuscript is long
+                const sampleText = bookState.manuscript.length > 20000
+                    ? bookState.manuscript.substring(0, 20000) + "\n\n[...manuscript continues...]"
+                    : bookState.manuscript;
 
-${bookState.manuscript}
+                const prompt = `You are a professional literary editor and quality assessor. Evaluate this manuscript excerpt on a detailed scale of 1-10:
 
-Provide scores for:
-1. Plot Coherence (1-10)
-2. Character Consistency (1-10)  
-3. Prose Quality (1-10)
-4. Pacing (1-10)
-5. Overall Score (1-10)
+${sampleText}
 
-Format as JSON: {"plot": X, "character": X, "prose": X, "pacing": X, "overall": X}
+Assess across these dimensions:
 
-Then provide brief feedback on strengths and areas for improvement.`;
+**1. PLOT COHERENCE (1-10)**
+- Story logic and causality
+- Plot hole presence
+- Narrative consistency
+- Satisfying progression
+
+**2. CHARACTER CONSISTENCY (1-10)**
+- Character voice consistency
+- Behavioral logic
+- Emotional authenticity
+- Character development
+
+**3. PROSE QUALITY (1-10)**
+- Sentence craft and variety
+- Verb strength and word choice
+- Absence of clichés
+- Literary device use
+- Show vs. tell balance
+
+**4. PACING (1-10)**
+- Scene rhythm
+- Balance of action/dialogue/introspection
+- Reader engagement
+- Appropriate speed for genre
+
+**5. DIALOGUE (1-10)**
+- Natural speech patterns
+- Character voice distinction
+- Subtext and depth
+- Avoidance of on-the-nose exposition
+
+**6. OVERALL QUALITY (1-10)**
+- Publication readiness
+- Commercial/literary appeal
+- Technical excellence
+- Reader enjoyment potential
+
+Provide scores as JSON: {"plot": X, "character": X, "prose": X, "pacing": X, "dialogue": X, "overall": X}
+
+Then give:
+- TOP 3 STRENGTHS (what's working well)
+- TOP 3 AREAS FOR IMPROVEMENT (specific issues to address)
+- RECOMMENDATION: Publish as-is / Minor revisions / Major revisions needed`;
 
                 const evaluation = await callClaudeAPI(prompt, 2000);
                 
@@ -847,7 +1514,7 @@ Then provide brief feedback on strengths and areas for improvement.`;
                     document.getElementById('plotScore').textContent = scores.plot + '/10';
                     document.getElementById('characterScore').textContent = scores.character + '/10';
                     document.getElementById('proseScore').textContent = scores.prose + '/10';
-                    document.getElementById('pacingScore').textContent = scores.pacing + '/10';
+                    document.getElementById('pacingScore').textContent = (scores.pacing || scores.dialogue) + '/10';
                     
                     document.getElementById('benchmarkSection').style.display = 'block';
                     

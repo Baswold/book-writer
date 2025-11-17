@@ -1,0 +1,33 @@
+{
+  "metadata": {
+    "templateName": "Epic Fantasy Adventure",
+    "description": "A template for creating an epic fantasy novel in the style of Brandon Sanderson or Patrick Rothfuss",
+    "genre": "fantasy",
+    "targetLength": "epic",
+    "estimatedChapters": 35
+  },
+  "bookVision": {
+    "title": "The Chronicles of [Your World Name]",
+    "genre": "fantasy",
+    "targetLength": "epic",
+    "concept": "In a world where magic is systematized and controlled by ancient academies, a young orphan discovers they possess a forbidden form of magic that hasn't been seen in centuries. As dark forces gather on the borders of the known world, our protagonist must master their powers while unraveling a conspiracy that threatens the very fabric of reality.\n\nKEY ELEMENTS:\n- Hard magic system with clear rules and limitations\n- Political intrigue within magical academies\n- Found family dynamic among diverse cast\n- Ancient prophecy with modern twist\n- Themes of power, responsibility, and identity\n- Multiple POV characters\n- Epic scope with intimate character moments",
+    "worldContext": "WORLD BUILDING:\n\nMAGIC SYSTEM:\n- Magic is drawn from natural elements (earth, fire, water, air, lightning, light, shadow)\n- Requires both innate talent and rigorous training\n- Each mage can typically master 1-2 elements in their lifetime\n- Magic has a cost - physical exhaustion, emotional toll, or resource depletion\n- Forbidden magic: Time manipulation, mind control, reality warping\n\nPOLITICAL STRUCTURE:\n- Five major kingdoms, each with their own magical academy\n- Council of Archmages oversees magical education and enforcement\n- Tension between traditional nobility and emerging magical meritocracy\n- Border conflicts and resource disputes\n\nHISTORY:\n- 1000 years since the Great Cataclysm that nearly destroyed magic\n- Ancient civilization left behind mysterious artifacts and ruins\n- Cyclical pattern of magical renaissance and decline\n\nCHARACTERS:\n\nPROTAGONIST:\n- Age: 16-18\n- Background: Orphaned, raised in a remote village\n- Discovery: Can wield multiple elements simultaneously (forbidden)\n- Arc: From naive outsider to reluctant hero to confident leader\n- Flaws: Impulsive, stubborn, trusts too easily\n- Strengths: Compassionate, quick learner, natural leader\n\nMENTOR:\n- Exiled former Archmage with dark past\n- Haunted by failure that led to student deaths\n- Reluctant to train protagonist\n- Knows more about the prophecy than they reveal\n\nANTAGONIST:\n- Believes they're saving the world through extreme measures\n- Sympathetic motivations rooted in past trauma\n- Commands forbidden magic\n- Revealed to have connection to protagonist\n\nSUPPORTING CAST:\n- Rival-turned-ally from noble family\n- Book-smart scholar with social anxiety\n- Gruff warrior with secret gentle side\n- Enigmatic merchant with hidden agenda",
+    "writingStyle": "STYLE GUIDELINES:\n\nPROSE:\n- Clear, accessible prose with moments of lyrical beauty\n- Active voice and vivid sensory details\n- Balance action, dialogue, and introspection\n- Show character emotions through action and dialogue, not just telling\n\nPACING:\n- Action chapter followed by character development chapter\n- Build tension gradually with explosive payoffs\n- End chapters on hooks or revelations\n- Vary chapter length for dramatic effect\n\nDIALOGUE:\n- Natural, character-specific speech patterns\n- Avoid excessive exposition in dialogue\n- Use subtext and conflict in conversations\n- Modern sensibility without modern slang\n\nMAGIC DESCRIPTION:\n- Concrete, sensory details of spell casting\n- Clear cause and effect\n- Show the cost of magic use\n- Make magic feel wondrous yet scientific\n\nTONE:\n- Generally hopeful despite dark moments\n- Earnest without being naive\n- Epic scope grounded in human emotion\n- Serious stakes with moments of levity"
+  },
+  "hints": [
+    "Establish your magic system's rules clearly in Chapter 1-2",
+    "Introduce your protagonist's ordinary world before the inciting incident",
+    "Create a diverse cast with distinct voices and motivations",
+    "Build your world through character interactions, not info dumps",
+    "Plant seeds for later revelations from the beginning",
+    "Give your antagonist understandable (if not justifiable) motivations",
+    "Use multiple POV characters to show different perspectives",
+    "Balance epic set pieces with intimate character moments",
+    "End act one with a major revelation or point of no return",
+    "Ensure each supporting character has their own arc"
+  ],
+  "estimatedCost": {
+    "sonnet": "$15-25",
+    "opus": "$75-125"
+  }
+}

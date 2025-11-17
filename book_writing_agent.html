@@ -3,8 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Book Writing Agent System</title>
+    <title>AI Book Writing Agent System - Advanced</title>
     <style>
+        :root {
+            --bg-gradient-1: #667eea;
+            --bg-gradient-2: #764ba2;
+            --primary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --text: #2c3e50;
+            --bg-main: #ffffff;
+            --bg-section: #f8f9fa;
+            --border: #e9ecef;
+        }
+
+        body.dark-mode {
+            --bg-gradient-1: #1a1a2e;
+            --bg-gradient-2: #16213e;
+            --primary: #4dabf7;
+            --success: #51cf66;
+            --warning: #ffd43b;
+            --danger: #ff6b6b;
+            --dark: #1a1a2e;
+            --light: #f1f3f5;
+            --text: #e9ecef;
+            --bg-main: #25262b;
+            --bg-section: #1a1b1e;
+            --border: #373A40;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,25 +43,47 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
             min-height: 100vh;
             padding: 20px;
+            color: var(--text);
+            transition: all 0.3s ease;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
-            background: white;
+            background: var(--bg-main);
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            background: linear-gradient(135deg, var(--dark) 0%, #34495e 100%);
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
         }
 
         .header h1 {
@@ -53,18 +105,26 @@
         }
 
         .section {
-            background: #f8f9fa;
+            background: var(--bg-section);
             border-radius: 15px;
             padding: 25px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .section:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
 
         .section h2 {
-            color: #2c3e50;
+            color: var(--text);
             margin-bottom: 20px;
             font-size: 1.4em;
-            border-bottom: 3px solid #3498db;
+            border-bottom: 3px solid var(--primary);
             padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .input-group {
@@ -75,21 +135,23 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--text);
         }
 
-        input[type="text"], input[type="password"], textarea, select {
+        input[type="text"], input[type="password"], input[type="number"], textarea, select {
             width: 100%;
             padding: 12px;
-            border: 2px solid #ddd;
+            border: 2px solid var(--border);
             border-radius: 8px;
             font-size: 14px;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
+            background: var(--bg-main);
+            color: var(--text);
         }
 
-        input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
+        input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: #3498db;
+            border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
@@ -228,14 +290,161 @@
 
         .output-area {
             grid-column: 1 / -1;
-            background: #2c3e50;
-            color: #ecf0f1;
+            background: var(--dark);
+            color: var(--light);
             padding: 20px;
             border-radius: 10px;
             font-family: 'Courier New', monospace;
             max-height: 400px;
             overflow-y: auto;
             margin-top: 20px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .preview-pane {
+            background: var(--bg-main);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            margin-top: 20px;
+            line-height: 1.8;
+        }
+
+        .preview-pane h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.error {
+            background: var(--danger);
+        }
+
+        .notification.warning {
+            background: var(--warning);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab:hover {
+            background: var(--bg-section);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-main);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .agent-tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .tool-btn {
+            padding: 10px;
+            font-size: 13px;
+            text-align: left;
         }
 
         .benchmark-section {
@@ -297,8 +506,14 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📚 AI Book Writing Agent System</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Theme</button>
+            <h1>📚 AI Book Writing Agent System - Advanced</h1>
             <p>Create expansive, beautiful novels with coordinated AI agents</p>
+            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+                <button class="btn btn-primary" onclick="saveProject()" style="font-size: 12px; padding: 8px 16px;">💾 Save Project</button>
+                <button class="btn btn-primary" onclick="loadProject()" style="font-size: 12px; padding: 8px 16px;">📂 Load Project</button>
+                <button class="btn btn-success" onclick="exportManuscript()" style="font-size: 12px; padding: 8px 16px;">📥 Export Manuscript</button>
+            </div>
         </div>
 
         <div class="main-content">
@@ -422,12 +637,29 @@
 
             <!-- Agent Controls -->
             <div class="section">
-                <h2>🤖 Agent Pipeline</h2>
+                <h2>🤖 Core Agent Pipeline</h2>
                 <button class="btn btn-primary" onclick="runPlanningAgent()">1. 📋 Planning Agent</button>
                 <button class="btn btn-primary" onclick="runStoryboardAgent()">2. 🎬 Storyboard Agent</button>
                 <button class="btn btn-primary" onclick="runChapterAgent()">3. 📑 Chapter Detailing</button>
                 <button class="btn btn-primary" onclick="runWritingAgent()">4. ✍️ Writing Agent</button>
                 <button class="btn btn-success" onclick="runFullPipeline()">🚀 Run Full Pipeline</button>
+            </div>
+
+            <!-- Advanced Agent Tools -->
+            <div class="section">
+                <h2>🛠️ Advanced Agent Tools</h2>
+                <div class="agent-tools-grid">
+                    <button class="btn btn-primary tool-btn" onclick="runResearchAgent()">🔬 Research Agent</button>
+                    <button class="btn btn-primary tool-btn" onclick="runCharacterAgent()">👥 Character Tracker</button>
+                    <button class="btn btn-primary tool-btn" onclick="runWorldBuildingAgent()">🌍 World Builder</button>
+                    <button class="btn btn-primary tool-btn" onclick="runDialogueAgent()">💬 Dialogue Polish</button>
+                    <button class="btn btn-primary tool-btn" onclick="runPacingAgent()">⚡ Pacing Analysis</button>
+                    <button class="btn btn-primary tool-btn" onclick="runStyleAgent()">🎨 Style Matcher</button>
+                    <button class="btn btn-primary tool-btn" onclick="runFactCheckAgent()">✅ Fact Checker</button>
+                    <button class="btn btn-primary tool-btn" onclick="runRevisionAgent()">📝 Revision Agent</button>
+                    <button class="btn btn-primary tool-btn" onclick="runGrammarAgent()">📖 Grammar Polish</button>
+                    <button class="btn btn-primary tool-btn" onclick="runSceneAgent()">🎭 Scene Visualizer</button>
+                </div>
             </div>
 
             <!-- Big GO Button -->
@@ -491,10 +723,35 @@
 
                 <!-- Output Console -->
                 <div class="output-area" id="outputConsole">
-                    <div>📝 Book Writing Agent System Initialized</div>
-                    <div>Ready to create your masterpiece...</div>
+                    <div>📝 Book Writing Agent System Initialized - Advanced Edition</div>
+                    <div>Ready to create your masterpiece with enhanced AI agents...</div>
+                </div>
+
+                <!-- Manuscript Preview -->
+                <div class="preview-pane" id="previewPane" style="display: none;">
+                    <h3>📖 Manuscript Preview</h3>
+                    <div id="manuscriptPreview"></div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal for Export Options -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📥 Export Manuscript</h2>
+                <button class="modal-close" onclick="closeModal('exportModal')">&times;</button>
+            </div>
+            <div class="input-group">
+                <label>Export Format:</label>
+                <select id="exportFormat">
+                    <option value="txt">Plain Text (.txt)</option>
+                    <option value="html">HTML (.html)</option>
+                    <option value="markdown">Markdown (.md)</option>
+                </select>
+            </div>
+            <button class="btn btn-success" onclick="confirmExport()">Download</button>
         </div>
     </div>
 
@@ -507,7 +764,13 @@
             chapters: [],
             manuscript: '',
             styleReferences: [],
-            researchMaterials: []
+            researchMaterials: [],
+            characterProfiles: {},
+            worldBuilding: {},
+            researchNotes: '',
+            revisions: [],
+            currentChapter: 1,
+            totalChapters: 0
         };
 
         // Utility functions
@@ -525,12 +788,52 @@
         function updateAgentStatus(agent, status, isActive = false, isComplete = false) {
             const agentCard = document.getElementById(agent + 'Agent');
             const statusSpan = document.getElementById(agent + 'Status');
-            
+
             statusSpan.textContent = status;
-            
+
             agentCard.className = 'agent-card';
             if (isActive) agentCard.classList.add('active');
             if (isComplete) agentCard.classList.add('complete');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            showNotification(`Switched to ${isDark ? 'dark' : 'light'} mode`, 'success');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function updatePreview() {
+            const preview = document.getElementById('manuscriptPreview');
+            const pane = document.getElementById('previewPane');
+
+            if (bookState.manuscript) {
+                preview.innerHTML = bookState.manuscript.replace(/\n/g, '<br><br>');
+                pane.style.display = 'block';
+            } else {
+                pane.style.display = 'none';
+            }
+        }
+
+        // Initialize theme
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
         }
 
         // File handling
@@ -876,4 +1179,522 @@ Then provide brief feedback on strengths and areas for improvement.`;
             await new Promise(resolve => setTimeout(resolve, 1000));
             await runWritingAgent();
             await runBenchmark();
+            updatePreview();
             log('🎉 Pipeline complete! Your book chapter is ready.');
+            showNotification('Pipeline completed successfully!', 'success');
+        }
+
+        // Advanced Agent Functions
+        async function runResearchAgent() {
+            try {
+                log('🔬 Starting Research Agent...');
+                showNotification('Research Agent running...', 'success');
+
+                const bookConcept = document.getElementById('bookConcept').value;
+                const genre = document.getElementById('genre').value;
+
+                const prompt = `You are a research agent for a book writing project. Research and provide:
+
+BOOK CONCEPT: ${bookConcept}
+GENRE: ${genre}
+
+Please provide:
+1. Historical/factual background relevant to the story
+2. Genre conventions and reader expectations
+3. Similar successful books and why they worked
+4. World-building research (if applicable)
+5. Character archetype research
+6. Setting details and authenticity tips
+
+Provide comprehensive research notes that will help make the book more authentic and engaging.`;
+
+                const research = await callClaudeAPI(prompt, 4000);
+                bookState.researchNotes = research;
+
+                log('✅ Research Agent completed!');
+                log('📚 Research notes generated and stored');
+                showNotification('Research completed!', 'success');
+
+            } catch (error) {
+                log(`❌ Research Agent failed: ${error.message}`);
+                showNotification('Research failed', 'error');
+            }
+        }
+
+        async function runCharacterAgent() {
+            try {
+                log('👥 Starting Character Consistency Agent...');
+                showNotification('Analyzing characters...', 'success');
+
+                const outline = bookState.outline || document.getElementById('bookConcept').value;
+                const manuscript = bookState.manuscript;
+
+                const prompt = `You are a character consistency tracking agent. Analyze the following content:
+
+OUTLINE/CONCEPT: ${outline}
+${manuscript ? `\n\nCURRENT MANUSCRIPT: ${manuscript}` : ''}
+
+Create detailed character profiles including:
+1. Physical descriptions
+2. Personality traits
+3. Speech patterns and mannerisms
+4. Background and motivations
+5. Character arcs
+6. Relationships with other characters
+7. Consistency notes (things to watch out for)
+
+Format as a structured character bible that ensures consistency throughout the book.`;
+
+                const profiles = await callClaudeAPI(prompt, 4000);
+                bookState.characterProfiles = profiles;
+
+                log('✅ Character Agent completed!');
+                log('👥 Character profiles created');
+                showNotification('Character profiles ready!', 'success');
+
+            } catch (error) {
+                log(`❌ Character Agent failed: ${error.message}`);
+                showNotification('Character analysis failed', 'error');
+            }
+        }
+
+        async function runWorldBuildingAgent() {
+            try {
+                log('🌍 Starting World-Building Agent...');
+                showNotification('Building world consistency...', 'success');
+
+                const worldContext = document.getElementById('worldContext').value;
+                const outline = bookState.outline;
+
+                const prompt = `You are a world-building consistency agent. Create a comprehensive world bible:
+
+WORLD CONTEXT: ${worldContext}
+OUTLINE: ${outline}
+
+Provide:
+1. Geography and locations
+2. History and timeline
+3. Social structures and politics
+4. Technology/magic systems (if applicable)
+5. Cultural details (customs, religions, languages)
+6. Rules and constraints of the world
+7. Consistency checklist
+
+Create a reference document that ensures the world remains consistent and believable.`;
+
+                const worldBible = await callClaudeAPI(prompt, 4000);
+                bookState.worldBuilding = worldBible;
+
+                log('✅ World-Building Agent completed!');
+                log('🌍 World bible created');
+                showNotification('World bible ready!', 'success');
+
+            } catch (error) {
+                log(`❌ World-Building Agent failed: ${error.message}`);
+                showNotification('World-building failed', 'error');
+            }
+        }
+
+        async function runDialogueAgent() {
+            try {
+                log('💬 Starting Dialogue Polishing Agent...');
+                showNotification('Polishing dialogue...', 'success');
+
+                if (!bookState.manuscript) {
+                    log('❌ No manuscript to polish yet');
+                    showNotification('No manuscript available', 'warning');
+                    return;
+                }
+
+                const prompt = `You are a dialogue polishing agent. Analyze and improve the dialogue in this manuscript:
+
+${bookState.manuscript}
+
+CHARACTER PROFILES: ${bookState.characterProfiles || 'Not available'}
+
+Provide:
+1. Analysis of current dialogue quality
+2. Suggestions for making dialogue more natural and character-specific
+3. Improved version of key dialogue passages
+4. Tips for maintaining distinct character voices
+5. Subtext and tension improvements
+
+Focus on making dialogue feel authentic, purposeful, and character-specific.`;
+
+                const dialogueAnalysis = await callClaudeAPI(prompt, 4000);
+
+                log('✅ Dialogue Agent completed!');
+                log('💬 Dialogue analysis complete');
+                log(dialogueAnalysis);
+                showNotification('Dialogue analysis ready!', 'success');
+
+            } catch (error) {
+                log(`❌ Dialogue Agent failed: ${error.message}`);
+                showNotification('Dialogue polish failed', 'error');
+            }
+        }
+
+        async function runPacingAgent() {
+            try {
+                log('⚡ Starting Pacing Analysis Agent...');
+                showNotification('Analyzing pacing...', 'success');
+
+                if (!bookState.manuscript) {
+                    log('❌ No manuscript to analyze yet');
+                    showNotification('No manuscript available', 'warning');
+                    return;
+                }
+
+                const prompt = `You are a pacing analysis agent. Analyze the pacing of this manuscript:
+
+${bookState.manuscript}
+
+Provide:
+1. Pacing assessment (slow/moderate/fast in different sections)
+2. Balance of action, dialogue, and introspection
+3. Scene length analysis
+4. Tension and release patterns
+5. Recommendations for pacing improvements
+6. Specific scenes that need adjustment
+
+Rate overall pacing quality and provide actionable suggestions.`;
+
+                const pacingAnalysis = await callClaudeAPI(prompt, 3000);
+
+                log('✅ Pacing Agent completed!');
+                log('⚡ Pacing analysis complete');
+                log(pacingAnalysis);
+                showNotification('Pacing analysis ready!', 'success');
+
+            } catch (error) {
+                log(`❌ Pacing Agent failed: ${error.message}`);
+                showNotification('Pacing analysis failed', 'error');
+            }
+        }
+
+        async function runStyleAgent() {
+            try {
+                log('🎨 Starting Style Matching Agent...');
+                showNotification('Analyzing style consistency...', 'success');
+
+                if (!bookState.manuscript) {
+                    log('❌ No manuscript to analyze yet');
+                    showNotification('No manuscript available', 'warning');
+                    return;
+                }
+
+                const writingStyle = document.getElementById('writingStyle').value;
+
+                const prompt = `You are a style consistency agent. Analyze if this manuscript matches the target style:
+
+TARGET STYLE: ${writingStyle}
+
+MANUSCRIPT: ${bookState.manuscript}
+
+Provide:
+1. Style consistency score (1-10)
+2. Areas where style matches well
+3. Areas where style deviates
+4. Specific examples of style issues
+5. Recommendations for style improvements
+6. Rewritten samples showing better style matching
+
+Help ensure the manuscript maintains consistent, appropriate style throughout.`;
+
+                const styleAnalysis = await callClaudeAPI(prompt, 4000);
+
+                log('✅ Style Agent completed!');
+                log('🎨 Style analysis complete');
+                log(styleAnalysis);
+                showNotification('Style analysis ready!', 'success');
+
+            } catch (error) {
+                log(`❌ Style Agent failed: ${error.message}`);
+                showNotification('Style analysis failed', 'error');
+            }
+        }
+
+        async function runFactCheckAgent() {
+            try {
+                log('✅ Starting Fact-Checking Agent...');
+                showNotification('Checking internal consistency...', 'success');
+
+                if (!bookState.manuscript) {
+                    log('❌ No manuscript to check yet');
+                    showNotification('No manuscript available', 'warning');
+                    return;
+                }
+
+                const prompt = `You are a fact-checking agent for fiction. Check internal consistency:
+
+MANUSCRIPT: ${bookState.manuscript}
+
+CHARACTER PROFILES: ${bookState.characterProfiles || 'Not available'}
+WORLD BIBLE: ${bookState.worldBuilding || 'Not available'}
+
+Check for:
+1. Character consistency (actions, speech, appearance)
+2. Timeline consistency
+3. World-building rule consistency
+4. Plot logic issues
+5. Contradictions or continuity errors
+6. Factual errors (historical, scientific, etc.)
+
+Provide a detailed consistency report with specific issues and suggested fixes.`;
+
+                const factCheck = await callClaudeAPI(prompt, 4000);
+
+                log('✅ Fact-Check Agent completed!');
+                log('✅ Consistency report generated');
+                log(factCheck);
+                showNotification('Fact-check complete!', 'success');
+
+            } catch (error) {
+                log(`❌ Fact-Check Agent failed: ${error.message}`);
+                showNotification('Fact-check failed', 'error');
+            }
+        }
+
+        async function runRevisionAgent() {
+            try {
+                log('📝 Starting Revision Agent...');
+                showNotification('Generating revision...', 'success');
+
+                if (!bookState.manuscript) {
+                    log('❌ No manuscript to revise yet');
+                    showNotification('No manuscript available', 'warning');
+                    return;
+                }
+
+                const prompt = `You are a revision agent. Improve this manuscript based on all available feedback:
+
+ORIGINAL MANUSCRIPT: ${bookState.manuscript}
+
+Consider:
+- Plot and character consistency
+- Pacing and flow
+- Dialogue quality
+- Prose quality
+- Style consistency
+- Show don't tell
+- Sensory details
+- Emotional impact
+
+Provide a revised, improved version of the manuscript.`;
+
+                const revision = await callClaudeAPI(prompt, 8000);
+                bookState.revisions.push(revision);
+                bookState.manuscript = revision;
+
+                log('✅ Revision Agent completed!');
+                log('📝 Manuscript revised and updated');
+                updatePreview();
+                showNotification('Revision complete!', 'success');
+
+            } catch (error) {
+                log(`❌ Revision Agent failed: ${error.message}`);
+                showNotification('Revision failed', 'error');
+            }
+        }
+
+        async function runGrammarAgent() {
+            try {
+                log('📖 Starting Grammar & Polish Agent...');
+                showNotification('Polishing grammar and prose...', 'success');
+
+                if (!bookState.manuscript) {
+                    log('❌ No manuscript to polish yet');
+                    showNotification('No manuscript available', 'warning');
+                    return;
+                }
+
+                const prompt = `You are a copy-editing agent. Polish this manuscript for:
+
+${bookState.manuscript}
+
+Fix:
+1. Grammar and syntax errors
+2. Punctuation issues
+3. Word choice improvements
+4. Sentence structure variety
+5. Paragraph flow
+6. Consistency in tense and POV
+7. Clarity and concision
+8. Professional polish
+
+Provide the polished version of the manuscript.`;
+
+                const polished = await callClaudeAPI(prompt, 8000);
+                bookState.manuscript = polished;
+
+                log('✅ Grammar Agent completed!');
+                log('📖 Manuscript polished and updated');
+                updatePreview();
+                showNotification('Grammar polish complete!', 'success');
+
+            } catch (error) {
+                log(`❌ Grammar Agent failed: ${error.message}`);
+                showNotification('Grammar polish failed', 'error');
+            }
+        }
+
+        async function runSceneAgent() {
+            try {
+                log('🎭 Starting Scene Visualization Agent...');
+                showNotification('Enhancing scene descriptions...', 'success');
+
+                if (!bookState.manuscript) {
+                    log('❌ No manuscript to enhance yet');
+                    showNotification('No manuscript available', 'warning');
+                    return;
+                }
+
+                const prompt = `You are a scene visualization agent. Enhance the visual and sensory descriptions:
+
+${bookState.manuscript}
+
+Provide:
+1. Analysis of current scene descriptions
+2. Suggestions for stronger sensory details (sight, sound, smell, touch, taste)
+3. Improved versions of key scenes
+4. Tips for "showing" rather than "telling"
+5. Atmospheric and mood enhancements
+6. Blocking and spatial awareness improvements
+
+Make scenes more vivid and immersive without overwriting.`;
+
+                const sceneAnalysis = await callClaudeAPI(prompt, 4000);
+
+                log('✅ Scene Visualization Agent completed!');
+                log('🎭 Scene enhancement suggestions generated');
+                log(sceneAnalysis);
+                showNotification('Scene analysis ready!', 'success');
+
+            } catch (error) {
+                log(`❌ Scene Agent failed: ${error.message}`);
+                showNotification('Scene analysis failed', 'error');
+            }
+        }
+
+        // Save/Load/Export Functions
+        function saveProject() {
+            try {
+                const projectData = {
+                    ...bookState,
+                    bookTitle: document.getElementById('bookTitle').value,
+                    genre: document.getElementById('genre').value,
+                    targetLength: document.getElementById('targetLength').value,
+                    bookConcept: document.getElementById('bookConcept').value,
+                    writingStyle: document.getElementById('writingStyle').value,
+                    worldContext: document.getElementById('worldContext').value,
+                    timestamp: new Date().toISOString()
+                };
+
+                const dataStr = JSON.stringify(projectData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `book-project-${Date.now()}.json`;
+                link.click();
+
+                log('💾 Project saved successfully');
+                showNotification('Project saved!', 'success');
+
+            } catch (error) {
+                log(`❌ Save failed: ${error.message}`);
+                showNotification('Save failed', 'error');
+            }
+        }
+
+        function loadProject() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+
+                reader.onload = event => {
+                    try {
+                        const projectData = JSON.parse(event.target.result);
+
+                        // Restore bookState
+                        Object.assign(bookState, projectData);
+
+                        // Restore UI fields
+                        document.getElementById('bookTitle').value = projectData.bookTitle || '';
+                        document.getElementById('genre').value = projectData.genre || 'fantasy';
+                        document.getElementById('targetLength').value = projectData.targetLength || 'novel';
+                        document.getElementById('bookConcept').value = projectData.bookConcept || '';
+                        document.getElementById('writingStyle').value = projectData.writingStyle || '';
+                        document.getElementById('worldContext').value = projectData.worldContext || '';
+
+                        updatePreview();
+                        log('📂 Project loaded successfully');
+                        showNotification('Project loaded!', 'success');
+
+                    } catch (error) {
+                        log(`❌ Load failed: ${error.message}`);
+                        showNotification('Load failed', 'error');
+                    }
+                };
+
+                reader.readAsText(file);
+            };
+
+            input.click();
+        }
+
+        function exportManuscript() {
+            if (!bookState.manuscript) {
+                showNotification('No manuscript to export', 'warning');
+                return;
+            }
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function confirmExport() {
+            const format = document.getElementById('exportFormat').value;
+            const title = document.getElementById('bookTitle').value || 'manuscript';
+            let content = bookState.manuscript;
+            let mimeType = 'text/plain';
+            let extension = 'txt';
+
+            if (format === 'html') {
+                content = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>${title}</title>
+    <style>
+        body { font-family: Georgia, serif; max-width: 800px; margin: 40px auto; line-height: 1.8; }
+        h1 { text-align: center; }
+        p { text-indent: 2em; }
+    </style>
+</head>
+<body>
+    <h1>${title}</h1>
+    ${content.split('\n').map(p => `<p>${p}</p>`).join('\n')}
+</body>
+</html>`;
+                mimeType = 'text/html';
+                extension = 'html';
+            } else if (format === 'markdown') {
+                content = `# ${title}\n\n${content}`;
+                mimeType = 'text/markdown';
+                extension = 'md';
+            }
+
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${title.replace(/\s+/g, '-').toLowerCase()}.${extension}`;
+            link.click();
+
+            closeModal('exportModal');
+            log(`📥 Manuscript exported as ${extension.toUpperCase()}`);
+            showNotification('Manuscript exported!', 'success');
+        }

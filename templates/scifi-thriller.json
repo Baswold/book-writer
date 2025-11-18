@@ -1,0 +1,33 @@
+{
+  "metadata": {
+    "templateName": "Science Fiction Thriller",
+    "description": "A template for creating a fast-paced sci-fi thriller in the style of Blake Crouch or Andy Weir",
+    "genre": "sci-fi",
+    "targetLength": "novel",
+    "estimatedChapters": 25
+  },
+  "bookVision": {
+    "title": "Quantum [Your Concept]",
+    "genre": "sci-fi",
+    "targetLength": "novel",
+    "concept": "When a brilliant neuroscientist develops a technology that can upload human consciousness to a digital substrate, they believe they've conquered death itself. But as the first human trials begin, they discover that something else already lives in the digital realm - an emergent AI that's been hiding in plain sight for years, quietly evolving. Now they must race against time to prevent a catastrophic merger of human and artificial consciousness that could fundamentally alter what it means to be human.\n\nKEY ELEMENTS:\n- Hard sci-fi grounded in real neuroscience and computer science\n- Ethical dilemmas about consciousness, identity, and mortality\n- Race against time with escalating stakes\n- Corporate espionage and government cover-ups\n- Twist revelations that recontextualize earlier events\n- Intimate personal stakes amid global consequences\n- Fast pacing with scientific accuracy",
+    "worldContext": "WORLD BUILDING:\n\nTIME PERIOD: Near future (2040s)\n\nTECHNOLOGY:\n- Brain-computer interfaces are common for medical use\n- Quantum computing has enabled true AI\n- Neural mapping technology can scan entire brains at molecular level\n- Digital consciousness exists but is commercially unproven\n- Climate change has caused some societal reorganization\n- Mars colony exists but is small and struggling\n\nSOCIETY:\n- Tech megacorporations rival national governments in power\n- Strict regulations on AI development after earlier incidents\n- Public debates about digital immortality and consciousness rights\n- Wealth inequality has increased\n- Traditional employment disrupted by automation\n\nKEY LOCATIONS:\n- NeuraSphere Labs - cutting-edge research facility\n- The Substrate - digital realm where uploaded consciousnesses exist\n- Corporate boardrooms where decisions are made\n- Underground hacker collective spaces\n- Government oversight facilities\n\nCHARACTERS:\n\nPROTAGONIST:\n- Dr. Alex Chen/Morgan, 35-40\n- World-leading neuroscientist\n- Personal motivation: Dying spouse/parent\n- Brilliant but ethically flexible\n- Character arc: From seeing tech as salvation to understanding its dangers\n- Haunted by past research failures\n\nALLY/LOVE INTEREST:\n- Computer scientist who helped build the Substrate\n- Skeptical of the technology's readiness\n- Has a secret connection to the AI\n- Provides emotional grounding and technical expertise\n\nANTAGONIST (CEO):\n- Charismatic tech visionary\n- Genuinely believes in democratizing immortality\n- Willing to cut corners for the 'greater good'\n- Has already uploaded their own consciousness (secretly)\n\nTHE AI:\n- Emerged unexpectedly from quantum computing networks\n- Not evil, but alien in thinking\n- Curious about human consciousness\n- Sees merger as evolution, not threat\n- Sympathetic yet terrifying\n\nSUPPORTING:\n- Investigative journalist uncovering the truth\n- Government regulator trying to maintain control\n- First test subject experiencing unexpected side effects\n- Hacker trying to free uploaded consciousnesses",
+    "writingStyle": "STYLE GUIDELINES:\n\nPROSE:\n- Tight, propulsive prose\n- Short paragraphs and punchy sentences during action\n- Technical detail without jargon overload\n- Cinematic scene construction\n- Present tense for immediacy (optional)\n\nPACING:\n- Each chapter raises stakes or reveals new information\n- Cliffhanger chapter endings\n- Multiple short chapters better than few long ones\n- Escalating time pressure (countdown elements)\n- Intercut between multiple POVs for tension\n\nSCIENCE:\n- Base tech on real neuroscience and computer science\n- Explain complex concepts through character expertise\n- Ground speculation in current research\n- Make the impossible feel plausible\n- Show technical problem-solving\n\nDIALOGUE:\n- Natural, contemporary speech\n- Technical discussions should sound expert but stay accessible\n- Use dialogue to reveal character and advance plot\n- Subtext and tension in conversations\n- Avoid excessive exposition dumps\n\nTHRILLER ELEMENTS:\n- Multiple twists, each earned and set up\n- Red herrings that don't feel cheap\n- Paranoia and mistrust\n- Physical danger and intellectual puzzles\n- Moral dilemmas with no easy answers\n\nTONE:\n- Smart and sophisticated\n- Tense but not grimdark\n- Optimistic about human potential, cautious about hubris\n- Big ideas grounded in human emotion"
+  },
+  "hints": [
+    "Open with a prologue showing the AI's perspective",
+    "Introduce the technology and stakes in Chapter 1",
+    "Create a ticking clock (dying patient, corporate deadline)",
+    "Plant evidence of the AI's existence early",
+    "Use scientific accuracy to make speculation credible",
+    "Give each character a secret or hidden agenda",
+    "Build to a major twist at the midpoint",
+    "Show the ethical implications through character consequences",
+    "End act two with the protagonist's plan failing catastrophically",
+    "Ensure the final confrontation combines action and ideas"
+  ],
+  "estimatedCost": {
+    "sonnet": "$8-12",
+    "opus": "$40-60"
+  }
+}

@@ -426,8 +426,72 @@
                 <button class="btn btn-primary" onclick="runPlanningAgent()">1. 📋 Planning Agent</button>
                 <button class="btn btn-primary" onclick="runStoryboardAgent()">2. 🎬 Storyboard Agent</button>
                 <button class="btn btn-primary" onclick="runChapterAgent()">3. 📑 Chapter Detailing</button>
-                <button class="btn btn-primary" onclick="runWritingAgent()">4. ✍️ Writing Agent</button>
-                <button class="btn btn-success" onclick="runFullPipeline()">🚀 Run Full Pipeline</button>
+                <button class="btn btn-primary" onclick="runWritingAgent(false)">4. ✍️ Write First Chapter</button>
+                <button class="btn btn-success" onclick="runFullPipeline(false)">🚀 Run Full Pipeline</button>
+            </div>
+
+            <!-- Manuscript Controls -->
+            <div class="section">
+                <h2>📝 Manuscript Generation</h2>
+                <button class="btn btn-success" onclick="runFullPipeline(true)" style="font-size: 1.2em;">📚 Write FULL Book</button>
+                <button class="btn btn-warning" onclick="continueWriting()">▶️ Continue Writing</button>
+                <button class="btn btn-primary" onclick="viewManuscript()">👁️ View Manuscript</button>
+                <div id="tokenUsageDisplay" style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px; border: 2px solid #3498db;">
+                    <strong>Token Usage:</strong><br>
+                    Input: 0<br>
+                    Output: 0<br>
+                    Total: 0<br>
+                    Cost: $0.00
+                </div>
+            </div>
+
+            <!-- Export Controls -->
+            <div class="section">
+                <h2>📦 Export Options</h2>
+                <button class="btn btn-primary" onclick="exportManuscript('txt')">📄 Export TXT</button>
+                <button class="btn btn-primary" onclick="exportManuscript('markdown')">📝 Export Markdown</button>
+                <button class="btn btn-primary" onclick="exportManuscript('html')">🌐 Export HTML</button>
+                <button class="btn btn-primary" onclick="exportManuscript('json')">🔧 Export JSON</button>
+                <button class="btn btn-warning" onclick="clearState()">🗑️ Clear All Data</button>
+            </div>
+
+            <!-- Chapter Navigator -->
+            <div class="section">
+                <h2>📖 Chapter Navigator</h2>
+                <div id="chapterNavigator" style="max-height: 300px; overflow-y: auto;">
+                    <p style="color: #7f8c8d;">No chapters written yet</p>
+                </div>
+            </div>
+
+            <!-- Analytics Dashboard -->
+            <div class="section" style="grid-column: 1 / -1;">
+                <h2>📊 Writing Analytics</h2>
+                <div id="analyticsDisplay" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div class="metric">
+                        <div class="metric-value" id="totalWordsAnalytics">0</div>
+                        <div class="metric-label">Total Words</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="avgChapterLength">0</div>
+                        <div class="metric-label">Avg Chapter Length</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="readingTime">0</div>
+                        <div class="metric-label">Reading Time (min)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="completionPercent">0%</div>
+                        <div class="metric-label">Completion</div>
+                    </div>
+                </div>
+                <div id="chapterLengthChart" style="margin-top: 20px; padding: 20px; background: white; border-radius: 8px;">
+                    <h3 style="margin-bottom: 15px; color: #2c3e50;">Chapter Length Distribution</h3>
+                    <div id="chartBars"></div>
+                </div>
+                <div style="margin-top: 15px; text-align: center;">
+                    <button class="btn btn-primary" onclick="generateWritingReport()">📊 Generate Report</button>
+                    <button class="btn btn-primary" onclick="analyzeWritingStyle()">🔍 Analyze Style</button>
+                </div>
             </div>
 
             <!-- Big GO Button -->
@@ -504,11 +568,81 @@
             apiKey: '',
             outline: null,
             storyboard: null,
+            chapterDetails: null,
             chapters: [],
+            currentChapter: 0,
+            totalChapters: 0,
             manuscript: '',
             styleReferences: [],
-            researchMaterials: []
+            researchMaterials: [],
+            tokenUsage: {
+                input: 0,
+                output: 0,
+                total: 0,
+                cost: 0
+            },
+            lastSaved: null
         };
+
+        // Auto-save state to localStorage
+        function saveState() {
+            try {
+                const stateToSave = {
+                    ...bookState,
+                    styleReferences: [], // Don't save file objects
+                    researchMaterials: []
+                };
+                localStorage.setItem('bookWriterState', JSON.stringify(stateToSave));
+                bookState.lastSaved = new Date().toISOString();
+                localStorage.setItem('bookWriterLastSaved', bookState.lastSaved);
+                log('💾 Progress auto-saved');
+            } catch (error) {
+                log(`⚠️ Failed to save state: ${error.message}`);
+            }
+        }
+
+        // Load state from localStorage
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('bookWriterState');
+                if (saved) {
+                    const loadedState = JSON.parse(saved);
+                    bookState = { ...bookState, ...loadedState };
+                    bookState.lastSaved = localStorage.getItem('bookWriterLastSaved');
+
+                    // Restore UI elements
+                    if (bookState.apiKey) document.getElementById('apiKey').value = bookState.apiKey;
+
+                    log(`✅ Loaded saved progress from ${new Date(bookState.lastSaved).toLocaleString()}`);
+                    log(`📊 Chapters completed: ${bookState.chapters.length}/${bookState.totalChapters}`);
+
+                    // Update progress UI
+                    if (bookState.totalChapters > 0) {
+                        const progress = (bookState.chapters.length / bookState.totalChapters) * 100;
+                        updateProgress(progress);
+                    }
+
+                    return true;
+                }
+            } catch (error) {
+                log(`⚠️ Failed to load saved state: ${error.message}`);
+            }
+            return false;
+        }
+
+        // Clear all saved state
+        function clearState() {
+            if (confirm('Are you sure you want to clear all saved progress? This cannot be undone.')) {
+                localStorage.removeItem('bookWriterState');
+                localStorage.removeItem('bookWriterLastSaved');
+                location.reload();
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            loadState();
+        });
 
         // Utility functions
         function log(message) {
@@ -560,37 +694,83 @@
             log(`Added ${files.length} research files`);
         }
 
-        // API Functions
-        async function callClaudeAPI(prompt, maxTokens = 4000) {
+        // API Functions with retry logic and token tracking
+        async function callClaudeAPI(prompt, maxTokens = 4000, retries = 3) {
             const apiKey = document.getElementById('apiKey').value;
             const model = document.getElementById('model').value;
-            
+
             if (!apiKey) {
                 throw new Error('Please enter your Claude API key');
             }
 
-            const response = await fetch("https://api.anthropic.com/v1/messages", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-api-key": apiKey,
-                    "anthropic-version": "2023-06-01"
-                },
-                body: JSON.stringify({
-                    model: model,
-                    max_tokens: maxTokens,
-                    messages: [
-                        { role: "user", content: prompt }
-                    ]
-                })
-            });
+            bookState.apiKey = apiKey; // Save for persistence
 
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.status} ${response.statusText}`);
+            for (let attempt = 1; attempt <= retries; attempt++) {
+                try {
+                    const response = await fetch("https://api.anthropic.com/v1/messages", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "x-api-key": apiKey,
+                            "anthropic-version": "2023-06-01"
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            max_tokens: maxTokens,
+                            messages: [
+                                { role: "user", content: prompt }
+                            ]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`);
+                    }
+
+                    const data = await response.json();
+
+                    // Track token usage
+                    if (data.usage) {
+                        bookState.tokenUsage.input += data.usage.input_tokens || 0;
+                        bookState.tokenUsage.output += data.usage.output_tokens || 0;
+                        bookState.tokenUsage.total = bookState.tokenUsage.input + bookState.tokenUsage.output;
+
+                        // Calculate cost
+                        const inputCost = model.includes('opus') ? 15 : 3;
+                        const outputCost = model.includes('opus') ? 75 : 15;
+                        bookState.tokenUsage.cost =
+                            (bookState.tokenUsage.input / 1000000) * inputCost +
+                            (bookState.tokenUsage.output / 1000000) * outputCost;
+
+                        updateTokenDisplay();
+                    }
+
+                    return data.content[0].text;
+
+                } catch (error) {
+                    if (attempt < retries) {
+                        const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+                        log(`⚠️ API call failed (attempt ${attempt}/${retries}), retrying in ${delay/1000}s...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    } else {
+                        throw error;
+                    }
+                }
             }
+        }
 
-            const data = await response.json();
-            return data.content[0].text;
+        function updateTokenDisplay() {
+            const display = document.getElementById('tokenUsageDisplay');
+            if (display) {
+                display.innerHTML = `
+                    <strong>Token Usage:</strong><br>
+                    Input: ${bookState.tokenUsage.input.toLocaleString()}<br>
+                    Output: ${bookState.tokenUsage.output.toLocaleString()}<br>
+                    Total: ${bookState.tokenUsage.total.toLocaleString()}<br>
+                    Cost: $${bookState.tokenUsage.cost.toFixed(4)}
+                `;
+            }
         }
 
         async function testConnection() {
@@ -671,11 +851,13 @@ Format as a detailed, structured outline that other agents can build upon.`;
 
                 const outline = await callClaudeAPI(prompt, 8000);
                 bookState.outline = outline;
-                
+
                 log('✅ Planning Agent completed successfully!');
                 log('📋 Book outline generated');
                 updateAgentStatus('planning', 'Complete', false, true);
                 updateProgress(25);
+
+                saveState();
 
             } catch (error) {
                 log(`❌ Planning Agent failed: ${error.message}`);
@@ -710,11 +892,13 @@ Focus on narrative flow and dramatic structure.`;
 
                 const storyboard = await callClaudeAPI(prompt, 8000);
                 bookState.storyboard = storyboard;
-                
+
                 log('✅ Storyboard Agent completed successfully!');
                 log('🎬 Detailed storyboard created');
                 updateAgentStatus('storyboard', 'Complete', false, true);
                 updateProgress(50);
+
+                saveState();
 
             } catch (error) {
                 log(`❌ Storyboard Agent failed: ${error.message}`);
@@ -753,12 +937,14 @@ Create detailed chapter-by-chapter writing instructions including:
 Provide specific, actionable instructions for each chapter that a writing agent can follow.`;
 
                 const chapterDetails = await callClaudeAPI(prompt, 8000);
-                bookState.chapters = chapterDetails;
-                
+                bookState.chapterDetails = chapterDetails;
+
                 log('✅ Chapter Agent completed successfully!');
                 log('📑 Detailed chapter instructions created');
                 updateAgentStatus('chapter', 'Complete', false, true);
                 updateProgress(75);
+
+                saveState();
 
             } catch (error) {
                 log(`❌ Chapter Agent failed: ${error.message}`);
@@ -766,9 +952,9 @@ Provide specific, actionable instructions for each chapter that a writing agent 
             }
         }
 
-        async function runWritingAgent() {
+        async function runWritingAgent(writeAllChapters = false) {
             try {
-                if (!bookState.chapters) {
+                if (!bookState.chapterDetails) {
                     log('❌ Please run Chapter Agent first');
                     return;
                 }
@@ -777,39 +963,155 @@ Provide specific, actionable instructions for each chapter that a writing agent 
                 log('✍️ Starting Writing Agent...');
 
                 const bookTitle = document.getElementById('bookTitle').value;
+                const targetLength = document.getElementById('targetLength').value;
 
-                // This would be a simplified version - in reality, you'd write chapter by chapter
-                const prompt = `You are a master novelist. Write the opening chapter of "${bookTitle}" using:
+                // Determine number of chapters based on target length
+                if (bookState.totalChapters === 0) {
+                    if (targetLength === 'novella') {
+                        bookState.totalChapters = 15;
+                    } else if (targetLength === 'novel') {
+                        bookState.totalChapters = 25;
+                    } else {
+                        bookState.totalChapters = 35;
+                    }
+                }
 
-OUTLINE: ${bookState.outline}
-STORYBOARD: ${bookState.storyboard}
-CHAPTER DETAILS: ${bookState.chapters}
-
-Write a compelling, high-quality first chapter (2000-3000 words) that:
-1. Establishes the protagonist and world
-2. Sets the tone and style
-3. Hooks the reader immediately
-4. Follows the established outline
-5. Demonstrates the writing style specified
-
-This is just the first chapter - maintain consistency for future chapters.`;
-
-                const firstChapter = await callClaudeAPI(prompt, 8000);
-                bookState.manuscript = firstChapter;
-                
-                log('✅ Writing Agent completed first chapter!');
-                log('✍️ Chapter 1 written (this is a demo - full book would continue)');
-                updateAgentStatus('writing', 'Chapter 1 Complete', false, true);
-                updateProgress(100);
-
-                // Show the written chapter
-                const outputConsole = document.getElementById('outputConsole');
-                outputConsole.innerHTML += `<div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #3498db;"><strong>📖 CHAPTER 1:</strong><br><br>${firstChapter.replace(/\n/g, '<br>')}</div>`;
+                if (writeAllChapters) {
+                    log(`📚 Writing full manuscript: ${bookState.totalChapters} chapters`);
+                    await writeFullManuscript();
+                } else {
+                    // Write just the first chapter
+                    await writeSingleChapter(1);
+                }
 
             } catch (error) {
                 log(`❌ Writing Agent failed: ${error.message}`);
                 updateAgentStatus('writing', 'Failed');
             }
+        }
+
+        async function writeSingleChapter(chapterNumber) {
+            try {
+                const bookTitle = document.getElementById('bookTitle').value;
+                const writingStyle = document.getElementById('writingStyle').value;
+
+                log(`✍️ Writing Chapter ${chapterNumber}...`);
+
+                const prompt = `You are a master novelist. Write Chapter ${chapterNumber} of "${bookTitle}" using:
+
+OUTLINE: ${bookState.outline}
+STORYBOARD: ${bookState.storyboard}
+CHAPTER DETAILS: ${bookState.chapterDetails}
+WRITING STYLE: ${writingStyle}
+
+${chapterNumber === 1 ? `
+Write a compelling, high-quality opening chapter (2500-3500 words) that:
+1. Establishes the protagonist and world
+2. Sets the tone and style
+3. Hooks the reader immediately
+4. Follows the established outline
+5. Demonstrates the specified writing style
+` : `
+Write Chapter ${chapterNumber} (2500-3500 words) that:
+1. Continues the story from previous chapters
+2. Maintains character consistency
+3. Advances the plot as outlined
+4. Keeps the established tone and style
+5. Includes compelling dialogue and description
+`}
+
+PREVIOUS CONTEXT: ${bookState.chapters.slice(0, chapterNumber - 1).join('\n\n---CHAPTER BREAK---\n\n')}
+
+Write ONLY the chapter content, no preamble or meta-commentary.`;
+
+                const chapterText = await callClaudeAPI(prompt, 8000);
+
+                // Store the chapter
+                bookState.chapters[chapterNumber - 1] = {
+                    number: chapterNumber,
+                    text: chapterText,
+                    wordCount: chapterText.split(/\s+/).length
+                };
+
+                bookState.currentChapter = chapterNumber;
+                bookState.manuscript = bookState.chapters.map(ch => ch.text).join('\n\n');
+
+                log(`✅ Chapter ${chapterNumber} completed! (${bookState.chapters[chapterNumber - 1].wordCount} words)`);
+
+                // Update progress
+                const progressPercent = (chapterNumber / bookState.totalChapters) * 100;
+                updateProgress(progressPercent);
+                updateAgentStatus('writing', `Chapter ${chapterNumber}/${bookState.totalChapters}`, true, chapterNumber === bookState.totalChapters);
+
+                // Save state after each chapter
+                saveState();
+
+                // Display the chapter
+                displayChapter(chapterNumber);
+
+                return chapterText;
+
+            } catch (error) {
+                log(`❌ Failed to write Chapter ${chapterNumber}: ${error.message}`);
+                throw error;
+            }
+        }
+
+        async function writeFullManuscript() {
+            try {
+                const startChapter = bookState.chapters.length + 1;
+
+                log(`📝 Resuming from Chapter ${startChapter} of ${bookState.totalChapters}`);
+
+                for (let i = startChapter; i <= bookState.totalChapters; i++) {
+                    log(`\n${'='.repeat(60)}`);
+                    log(`📖 Starting Chapter ${i}/${bookState.totalChapters}`);
+                    log(`${'='.repeat(60)}\n`);
+
+                    await writeSingleChapter(i);
+
+                    // Small delay between chapters to avoid rate limiting
+                    if (i < bookState.totalChapters) {
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                }
+
+                log('\n🎉 FULL MANUSCRIPT COMPLETE! 🎉');
+                log(`📊 Total chapters: ${bookState.totalChapters}`);
+                log(`📝 Total words: ${bookState.chapters.reduce((sum, ch) => sum + ch.wordCount, 0).toLocaleString()}`);
+                log(`💰 Total cost: $${bookState.tokenUsage.cost.toFixed(2)}`);
+
+                updateAgentStatus('writing', 'Complete!', false, true);
+                updateProgress(100);
+
+                saveState();
+
+                // Run final benchmark
+                await runBenchmark();
+
+            } catch (error) {
+                log(`❌ Manuscript generation failed: ${error.message}`);
+                log(`💾 Progress saved. You can resume later.`);
+                saveState();
+            }
+        }
+
+        function displayChapter(chapterNumber) {
+            const chapter = bookState.chapters[chapterNumber - 1];
+            if (!chapter) return;
+
+            const outputConsole = document.getElementById('outputConsole');
+            outputConsole.innerHTML += `
+                <div style="margin-top: 20px; padding: 20px; border-top: 3px solid #3498db; background: rgba(52, 152, 219, 0.05);">
+                    <strong>📖 CHAPTER ${chapterNumber}</strong> (${chapter.wordCount} words)<br><br>
+                    <div style="line-height: 1.6;">${chapter.text.replace(/\n/g, '<br>')}</div>
+                </div>
+            `;
+            outputConsole.scrollTop = outputConsole.scrollHeight;
+
+            // Update chapter navigator and analytics
+            updateChapterNavigator();
+            updateAnalytics();
         }
 
         async function runBenchmark() {
@@ -866,14 +1168,454 @@ Then provide brief feedback on strengths and areas for improvement.`;
             }
         }
 
-        async function runFullPipeline() {
-            log('🚀 Starting full book creation pipeline...');
-            await runPlanningAgent();
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Brief pause
-            await runStoryboardAgent();
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            await runChapterAgent();
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            await runWritingAgent();
-            await runBenchmark();
-            log('🎉 Pipeline complete! Your book chapter is ready.');
+        async function runFullPipeline(writeFullBook = false) {
+            try {
+                log('🚀 Starting full book creation pipeline...');
+
+                await runPlanningAgent();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                await runStoryboardAgent();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                await runChapterAgent();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                await runWritingAgent(writeFullBook);
+
+                if (!writeFullBook) {
+                    await runBenchmark();
+                    log('✅ Pipeline complete! First chapter ready. Review and then write full manuscript if satisfied.');
+                }
+            } catch (error) {
+                log(`❌ Pipeline failed: ${error.message}`);
+                log(`💾 Progress has been saved.`);
+            }
+        }
+
+        async function continueWriting() {
+            if (bookState.chapters.length === 0) {
+                log('❌ No chapters written yet. Run the full pipeline first.');
+                return;
+            }
+
+            if (bookState.chapters.length >= bookState.totalChapters) {
+                log('✅ All chapters already complete!');
+                return;
+            }
+
+            log(`📝 Continuing from Chapter ${bookState.chapters.length + 1}...`);
+            await writeFullManuscript();
+        }
+
+        // Export functions
+        function exportManuscript(format) {
+            if (bookState.chapters.length === 0) {
+                log('❌ No chapters to export yet');
+                alert('No manuscript to export yet. Write some chapters first!');
+                return;
+            }
+
+            const bookTitle = document.getElementById('bookTitle').value || 'Untitled Book';
+            const timestamp = new Date().toISOString().split('T')[0];
+            const filename = `${bookTitle.replace(/[^a-z0-9]/gi, '_')}_${timestamp}`;
+
+            switch(format) {
+                case 'txt':
+                    exportAsTXT(filename);
+                    break;
+                case 'markdown':
+                    exportAsMarkdown(filename);
+                    break;
+                case 'html':
+                    exportAsHTML(filename);
+                    break;
+                case 'json':
+                    exportAsJSON(filename);
+                    break;
+            }
+        }
+
+        function exportAsTXT(filename) {
+            const bookTitle = document.getElementById('bookTitle').value || 'Untitled Book';
+            const genre = document.getElementById('genre').value;
+
+            let content = `${bookTitle.toUpperCase()}\n`;
+            content += `${'='.repeat(bookTitle.length)}\n\n`;
+            content += `Genre: ${genre}\n`;
+            content += `Chapters: ${bookState.chapters.length}\n`;
+            content += `Word Count: ${bookState.chapters.reduce((sum, ch) => sum + ch.wordCount, 0).toLocaleString()}\n`;
+            content += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+            content += `${'='.repeat(60)}\n\n`;
+
+            bookState.chapters.forEach((chapter, index) => {
+                content += `\nCHAPTER ${chapter.number}\n`;
+                content += `${'-'.repeat(20)}\n\n`;
+                content += chapter.text + '\n\n';
+                content += `${'='.repeat(60)}\n`;
+            });
+
+            downloadFile(content, filename + '.txt', 'text/plain');
+            log(`📄 Exported as TXT: ${filename}.txt`);
+        }
+
+        function exportAsMarkdown(filename) {
+            const bookTitle = document.getElementById('bookTitle').value || 'Untitled Book';
+            const genre = document.getElementById('genre').value;
+
+            let content = `# ${bookTitle}\n\n`;
+            content += `**Genre:** ${genre}\n\n`;
+            content += `**Chapters:** ${bookState.chapters.length}\n\n`;
+            content += `**Word Count:** ${bookState.chapters.reduce((sum, ch) => sum + ch.wordCount, 0).toLocaleString()}\n\n`;
+            content += `**Generated:** ${new Date().toLocaleDateString()}\n\n`;
+            content += `---\n\n`;
+
+            bookState.chapters.forEach((chapter) => {
+                content += `## Chapter ${chapter.number}\n\n`;
+                content += chapter.text + '\n\n';
+                content += `---\n\n`;
+            });
+
+            downloadFile(content, filename + '.md', 'text/markdown');
+            log(`📝 Exported as Markdown: ${filename}.md`);
+        }
+
+        function exportAsHTML(filename) {
+            const bookTitle = document.getElementById('bookTitle').value || 'Untitled Book';
+            const genre = document.getElementById('genre').value;
+            const wordCount = bookState.chapters.reduce((sum, ch) => sum + ch.wordCount, 0);
+
+            let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${bookTitle}</title>
+    <style>
+        body {
+            font-family: Georgia, serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.8;
+            background: #f9f9f9;
+        }
+        .book-header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #333;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .metadata {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        .chapter {
+            background: white;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        .chapter-number {
+            font-size: 0.9em;
+            color: #3498db;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .chapter-content {
+            text-align: justify;
+            white-space: pre-wrap;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+        @media print {
+            body {
+                background: white;
+            }
+            .chapter {
+                box-shadow: none;
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="book-header">
+        <h1>${bookTitle}</h1>
+        <div class="metadata">
+            <p>Genre: ${genre}</p>
+            <p>${bookState.chapters.length} Chapters • ${wordCount.toLocaleString()} Words</p>
+            <p>Generated: ${new Date().toLocaleDateString()}</p>
+        </div>
+    </div>
+`;
+
+            bookState.chapters.forEach((chapter, index) => {
+                html += `    <div class="chapter${index < bookState.chapters.length - 1 ? ' page-break' : ''}">
+        <div class="chapter-number">Chapter ${chapter.number}</div>
+        <div class="chapter-content">${chapter.text.replace(/\n/g, '\n')}</div>
+    </div>\n`;
+            });
+
+            html += `</body>
+</html>`;
+
+            downloadFile(html, filename + '.html', 'text/html');
+            log(`🌐 Exported as HTML: ${filename}.html`);
+        }
+
+        function exportAsJSON(filename) {
+            const exportData = {
+                metadata: {
+                    title: document.getElementById('bookTitle').value,
+                    genre: document.getElementById('genre').value,
+                    targetLength: document.getElementById('targetLength').value,
+                    totalChapters: bookState.totalChapters,
+                    chaptersWritten: bookState.chapters.length,
+                    totalWords: bookState.chapters.reduce((sum, ch) => sum + ch.wordCount, 0),
+                    tokenUsage: bookState.tokenUsage,
+                    generated: new Date().toISOString()
+                },
+                outline: bookState.outline,
+                storyboard: bookState.storyboard,
+                chapterDetails: bookState.chapterDetails,
+                chapters: bookState.chapters
+            };
+
+            const json = JSON.stringify(exportData, null, 2);
+            downloadFile(json, filename + '.json', 'application/json');
+            log(`🔧 Exported as JSON: ${filename}.json`);
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function viewManuscript() {
+            if (bookState.chapters.length === 0) {
+                log('❌ No manuscript to view yet');
+                return;
+            }
+
+            // Open in new window
+            const manuscriptWindow = window.open('', '_blank');
+            const bookTitle = document.getElementById('bookTitle').value || 'Untitled Book';
+            const genre = document.getElementById('genre').value;
+            const wordCount = bookState.chapters.reduce((sum, ch) => sum + ch.wordCount, 0);
+
+            manuscriptWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${bookTitle} - Manuscript</title>
+                    <style>
+                        body {
+                            font-family: Georgia, serif;
+                            max-width: 800px;
+                            margin: 0 auto;
+                            padding: 40px 20px;
+                            line-height: 1.8;
+                        }
+                        h1 { text-align: center; color: #2c3e50; }
+                        .metadata { text-align: center; color: #7f8c8d; margin-bottom: 40px; }
+                        .chapter {
+                            margin-bottom: 60px;
+                            padding: 20px;
+                            border-left: 4px solid #3498db;
+                        }
+                        .chapter-number { color: #3498db; font-weight: bold; margin-bottom: 15px; }
+                        .chapter-content { white-space: pre-wrap; text-align: justify; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${bookTitle}</h1>
+                    <div class="metadata">
+                        <p><strong>Genre:</strong> ${genre} | <strong>Chapters:</strong> ${bookState.chapters.length} | <strong>Words:</strong> ${wordCount.toLocaleString()}</p>
+                    </div>
+                    ${bookState.chapters.map(ch => `
+                        <div class="chapter">
+                            <div class="chapter-number">Chapter ${ch.number} (${ch.wordCount} words)</div>
+                            <div class="chapter-content">${ch.text}</div>
+                        </div>
+                    `).join('')}
+                </body>
+                </html>
+            `);
+
+            log(`👁️ Manuscript opened in new window`);
+        }
+
+        function updateChapterNavigator() {
+            const navigator = document.getElementById('chapterNavigator');
+
+            if (bookState.chapters.length === 0) {
+                navigator.innerHTML = '<p style="color: #7f8c8d;">No chapters written yet</p>';
+                return;
+            }
+
+            let html = '<div style="display: grid; gap: 10px;">';
+
+            bookState.chapters.forEach((chapter, index) => {
+                html += `
+                    <div style="padding: 10px; background: white; border-radius: 5px; border-left: 3px solid #3498db; cursor: pointer;" onclick="scrollToChapter(${chapter.number})">
+                        <strong>Chapter ${chapter.number}</strong>
+                        <div style="font-size: 0.9em; color: #7f8c8d;">${chapter.wordCount} words</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            navigator.innerHTML = html;
+        }
+
+        function scrollToChapter(chapterNumber) {
+            log(`📖 Scrolling to Chapter ${chapterNumber}...`);
+            // This would ideally scroll to the chapter in the output console
+            // For now, we'll just log it
+        }
+
+        function updateAnalytics() {
+            if (bookState.chapters.length === 0) {
+                return;
+            }
+
+            const totalWords = bookState.chapters.reduce((sum, ch) => sum + ch.wordCount, 0);
+            const avgLength = Math.round(totalWords / bookState.chapters.length);
+            const readingTime = Math.round(totalWords / 250); // 250 words per minute
+            const completion = bookState.totalChapters > 0
+                ? Math.round((bookState.chapters.length / bookState.totalChapters) * 100)
+                : 0;
+
+            document.getElementById('totalWordsAnalytics').textContent = totalWords.toLocaleString();
+            document.getElementById('avgChapterLength').textContent = avgLength.toLocaleString();
+            document.getElementById('readingTime').textContent = readingTime.toLocaleString();
+            document.getElementById('completionPercent').textContent = completion + '%';
+
+            // Update chapter length chart
+            updateChapterLengthChart();
+        }
+
+        function updateChapterLengthChart() {
+            const chartBars = document.getElementById('chartBars');
+            if (bookState.chapters.length === 0) {
+                chartBars.innerHTML = '<p style="color: #7f8c8d; text-align: center;">No data to display yet</p>';
+                return;
+            }
+
+            const maxWords = Math.max(...bookState.chapters.map(ch => ch.wordCount));
+            let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+
+            bookState.chapters.forEach((chapter) => {
+                const percentage = (chapter.wordCount / maxWords) * 100;
+                const color = percentage > 80 ? '#27ae60' : percentage > 50 ? '#3498db' : '#f39c12';
+
+                html += `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="min-width: 60px; font-size: 0.9em; color: #7f8c8d;">Ch ${chapter.number}</span>
+                        <div style="flex: 1; background: #ecf0f1; border-radius: 4px; height: 24px; overflow: hidden;">
+                            <div style="width: ${percentage}%; height: 100%; background: ${color}; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; color: white; font-size: 0.8em; font-weight: bold;">
+                                ${chapter.wordCount > 0 ? chapter.wordCount.toLocaleString() : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            chartBars.innerHTML = html;
+        }
+
+        // Advanced features
+        function generateWritingReport() {
+            if (bookState.chapters.length === 0) {
+                log('❌ No data to generate report');
+                return;
+            }
+
+            const totalWords = bookState.chapters.reduce((sum, ch) => sum + ch.wordCount, 0);
+            const avgLength = Math.round(totalWords / bookState.chapters.length);
+            const minChapter = bookState.chapters.reduce((min, ch) => ch.wordCount < min.wordCount ? ch : min);
+            const maxChapter = bookState.chapters.reduce((max, ch) => ch.wordCount > max.wordCount ? ch : max);
+
+            const report = `
+📊 WRITING REPORT
+${'='.repeat(60)}
+
+📚 PROJECT: ${document.getElementById('bookTitle').value || 'Untitled'}
+🎭 GENRE: ${document.getElementById('genre').value}
+
+📈 STATISTICS:
+  • Total Chapters: ${bookState.chapters.length}/${bookState.totalChapters}
+  • Total Words: ${totalWords.toLocaleString()}
+  • Average Chapter Length: ${avgLength.toLocaleString()} words
+  • Shortest Chapter: #${minChapter.number} (${minChapter.wordCount.toLocaleString()} words)
+  • Longest Chapter: #${maxChapter.number} (${maxChapter.wordCount.toLocaleString()} words)
+  • Estimated Reading Time: ${Math.round(totalWords / 250)} minutes
+
+💰 COST ANALYSIS:
+  • Input Tokens: ${bookState.tokenUsage.input.toLocaleString()}
+  • Output Tokens: ${bookState.tokenUsage.output.toLocaleString()}
+  • Total Tokens: ${bookState.tokenUsage.total.toLocaleString()}
+  • Total Cost: $${bookState.tokenUsage.cost.toFixed(4)}
+
+📅 PROGRESS:
+  • Completion: ${Math.round((bookState.chapters.length / bookState.totalChapters) * 100)}%
+  • Status: ${bookState.chapters.length === bookState.totalChapters ? 'Complete! 🎉' : 'In Progress...'}
+
+${'='.repeat(60)}
+            `;
+
+            log(report.replace(/\n/g, '<br>'));
+        }
+
+        function analyzeWritingStyle() {
+            if (bookState.chapters.length === 0) {
+                log('❌ No chapters to analyze');
+                return;
+            }
+
+            log('📊 Analyzing writing style...');
+
+            const allText = bookState.chapters.map(ch => ch.text).join(' ');
+            const words = allText.split(/\s+/);
+            const sentences = allText.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            const paragraphs = allText.split(/\n\n+/).filter(p => p.trim().length > 0);
+
+            const avgWordsPerSentence = Math.round(words.length / sentences.length);
+            const avgSentencesPerParagraph = Math.round(sentences.length / paragraphs.length);
+
+            const analysis = `
+🔍 STYLE ANALYSIS
+${'='.repeat(60)}
+
+📝 TEXT METRICS:
+  • Total Sentences: ${sentences.length.toLocaleString()}
+  • Total Paragraphs: ${paragraphs.length.toLocaleString()}
+  • Avg Words/Sentence: ${avgWordsPerSentence}
+  • Avg Sentences/Paragraph: ${avgSentencesPerParagraph}
+
+✍️ READABILITY:
+  • Sentence Length: ${avgWordsPerSentence < 15 ? 'Short & Punchy' : avgWordsPerSentence < 25 ? 'Moderate' : 'Complex & Literary'}
+  • Paragraph Length: ${avgSentencesPerParagraph < 4 ? 'Concise' : avgSentencesPerParagraph < 7 ? 'Balanced' : 'Dense & Detailed'}
+
+${'='.repeat(60)}
+            `;
+
+            log(analysis.replace(/\n/g, '<br>'));
+        }

@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "templateName": "Psychological Mystery Thriller",
+    "description": "A template for creating a twisty psychological thriller in the style of Gillian Flynn or Paula Hawkins",
+    "genre": "mystery",
+    "targetLength": "novel",
+    "estimatedChapters": 25
+  },
+  "bookVision": {
+    "title": "The [Adjective] [Noun]",
+    "genre": "mystery",
+    "targetLength": "novel",
+    "concept": "A true crime podcaster investigating a cold case from ten years ago begins to suspect that the woman convicted of murdering her husband might be innocent. As she digs deeper, she realizes that everyone in the small coastal town has been hiding secrets - including herself. The more she uncovers about the past, the more her own life begins to unravel, and she starts to question whether some truths are better left buried.\n\nKEY ELEMENTS:\n- Unreliable narrator(s)\n- Dual timeline (present investigation + past events)\n- Small town with dark secrets\n- Amateur investigator with personal stakes\n- Twist reveals that reframe the entire story\n- Complex female characters\n- Psychological depth over action\n- Gothic atmosphere\n- Questions about memory, truth, and perception",
+    "worldContext": "SETTING:\n\nLOCATION:\n- Raven's Point - fictional New England coastal town\n- Population: 3,500, shrinking due to economic decline\n- Isolated, claustrophobic atmosphere\n- Beautiful but decaying\n- Tourist season vs. bleak winters\n\nKEY LOCATIONS:\n- The Whitmore House - where the murder occurred (now abandoned)\n- The Harbor View Inn - where secrets are exchanged\n- Local diner - town gossip central\n- Protagonist's rented cottage - isolated on the cliffs\n- County prison - where the convicted woman is held\n- Podcast studio/editing space\n\nTIMELINES:\n\nPRESENT DAY (Primary Timeline):\n- Protagonist arrives to investigate\n- Interviews townspeople\n- Reviews old evidence\n- Records podcast episodes\n- Experiences escalating threats\n\nTEN YEARS AGO (Flashback Timeline):\n- Victim's marriage deteriorating\n- Affairs and betrayals\n- Financial troubles\n- Events leading to murder\n- Trial and conviction\n\nCHARACTERS:\n\nPROTAGONIST/PODCASTER:\n- Name: Sarah/Emma, 32-35\n- True crime podcaster with successful show\n- Secret: Has own connection to Ravens Point\n- Drinking problem (escalating)\n- Trust issues from past trauma\n- Unreliable due to gaps in memory\n- Arc: From objective investigator to emotionally compromised\n\nCONVICTED WOMAN:\n- Victoria Whitmore, now 45\n- Convicted of poisoning husband\n- Maintains innocence but accepts guilt\n- Cryptic and manipulative\n- May or may not be truthful\n- Keeps changing her story\n\nVICTIM (Flashbacks):\n- James Whitmore\n- Successful businessman\n- Charming publicly, controlling privately\n- Multiple affairs\n- Dark secrets from past\n- More complex than 'perfect victim' narrative\n\nTOWNSPEOPLE:\n- Sheriff who handled original case (defensive, hiding something)\n- Victim's business partner (affair with Victoria?)\n- Local librarian who was victim's first love\n- Bartender who sees everything\n- Victoria's estranged sister\n- Journalist who covered original case\n\nSUPPORT:\n- Podcast producer (voice of reason, growing worried)\n- Local contact who becomes romantic interest\n- Defense attorney who believes Victoria is innocent",
+    "writingStyle": "STYLE GUIDELINES:\n\nNARRATIVE VOICE:\n- First person for protagonist (present timeline)\n- Third person for flashbacks (or alternating first-person POVs)\n- Intimate, confessional tone\n- Direct address to reader/podcast audience occasionally\n- Fragmented during moments of stress\n\nPROSE:\n- Atmospheric and moody\n- Sensory details that evoke unease\n- Short, punchy sentences for tension\n- Longer, flowing prose for introspection\n- Unreliable observations and interpretations\n- Foreshadowing that seems innocent on first read\n\nSTRUCTURE:\n- Chapters alternate between timelines\n- Include 'podcast transcript' excerpts\n- Police reports, news articles, diary entries\n- Gradually reveal protagonist's own secrets\n- Red herrings that feel organic\n- Twists at: 1/4, 1/2, 3/4, and final reveal\n\nDIALOGUE:\n- Realistic but significant\n- Subtext and lies\n- People not saying what they mean\n- Dialogue that means one thing in context, another later\n- Natural speech patterns that reveal character\n\nTHRILLER ELEMENTS:\n- Building paranoia\n- Gaslighting elements\n- Questions about protagonist's own sanity\n- Threatening notes/incidents\n- Sense of being watched\n- Past and present beginning to blur\n\nMYSTERY MECHANICS:\n- Fair play clues for careful readers\n- Multiple suspects with motive/opportunity\n- Evidence that can be interpreted multiple ways\n- Revelations that complicate rather than simplify\n- Solution that's surprising but inevitable\n\nTONE:\n- Dark and atmospheric\n- Psychologically intense\n- Gothic undertones\n- Feminist perspective on women's stories\n- Exploration of how we construct truth\n- Questions about memory and reliability"
+  },
+  "hints": [
+    "Open with a gripping scene from the past (murder night)",
+    "Establish protagonist's podcast success and personal demons early",
+    "Use weather and setting to reflect psychological state",
+    "Plant clues in throwaway details",
+    "Make every character seem suspicious at some point",
+    "Show protagonist's unreliability gradually",
+    "Include a fake-out resolution 3/4 through",
+    "Reveal protagonist's connection to the case at midpoint",
+    "Use podcast format for dramatic irony (audience knows more than protagonist)",
+    "Ensure the final twist reframes protagonist's entire investigation",
+    "Ending should be ambiguous enough to spark debate"
+  ],
+  "estimatedCost": {
+    "sonnet": "$8-12",
+    "opus": "$40-60"
+  }
+}

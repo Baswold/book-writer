@@ -1,17 +1,40 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "",
+  "name": "ai-book-writer-backend",
+  "version": "2.0.0",
+  "description": "Backend server for AI Book Writer - handles manuscript storage, export, and analytics",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"No tests configured yet\" && exit 0",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.js\""
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "ai",
+    "book",
+    "writing",
+    "claude",
+    "manuscript",
+    "generator"
+  ],
+  "author": "AI Book Writer Team",
+  "license": "MIT",
   "type": "commonjs",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.1.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/ai-book-writer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/ai-book-writer/issues"
+  },
+  "homepage": "https://github.com/yourusername/ai-book-writer#readme"
 }
